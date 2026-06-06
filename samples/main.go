@@ -1,8 +1,8 @@
-// Command example exercises the WayaPay Go SDK against staging.
+// Command sample exercises the WayaPay Go SDK end to end against staging.
 //
 // Run it with your own credentials:
 //
-//	WAYA_MERCHANT_ID=MER_... WAYA_SECRET_KEY=WAYASECK_TEST_... go run ./examples
+//	WAYA_MERCHANT_ID=MER_... WAYA_SECRET_KEY=WAYASECK_TEST_... go run ./samples
 package main
 
 import (
@@ -12,20 +12,26 @@ import (
 	"os"
 	"time"
 
-	wayapay "github.com/wayapaychat/wayapay-go"
+	wayapay "github.com/wayapaychat/wayapay-go/src/wayapay"
 )
 
 func main() {
+	merchant := os.Getenv("WAYA_MERCHANT_ID")
+	secret := os.Getenv("WAYA_SECRET_KEY")
+	if merchant == "" || secret == "" {
+		log.Fatal("set WAYA_MERCHANT_ID and WAYA_SECRET_KEY")
+	}
+
 	client := wayapay.New(
-		os.Getenv("WAYA_MERCHANT_ID"),
-		os.Getenv("WAYA_SECRET_KEY"),
-		wayapay.WithBaseURL(wayapay.BaseURLStaging),
+		merchant,
+		secret,
+		wayapay.WithBaseURL(wayapay.BaseURLStaging), // drop for production
 	)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	// 1. Bank list.
+	// 1. Bank list (GET — auto retried on transient failures).
 	banks, err := client.Banks.List(ctx)
 	if err != nil {
 		log.Fatalf("bank list: %v", err)
@@ -43,7 +49,7 @@ func main() {
 	}
 	fmt.Printf("resolved account: %s\n", acct.AccountName)
 
-	// 3. Create a payment link.
+	// 3. Create a payment link to collect from a customer.
 	link, err := client.Collect.Initiate(ctx, wayapay.CollectRequest{
 		PaymentLinkType: wayapay.PaymentLinkTypeOneTime,
 		PaymentLinkName: "Order #1234",
@@ -61,15 +67,15 @@ func main() {
 	}
 	fmt.Printf("pay here: %s\n", link.ShortURL)
 
-	// 4. Initiate a payout.
+	// 4. Initiate a payout with a fresh, collision-resistant reference.
 	payout, err := client.Payout.Initiate(ctx, wayapay.PayoutRequest{
 		Amount:        25000,
 		Currency:      "NGN",
 		AccountNumber: acct.AccountNumber,
 		BankCode:      "058",
 		AccountName:   acct.AccountName,
-		Reference:     "PAYOUT-20260523-001",
-		Narration:     "Salary payment May 2026",
+		Reference:     wayapay.GenerateReference("PAYOUT"),
+		Narration:     "Salary payment",
 	})
 	if err != nil {
 		log.Fatalf("payout: %v", err)

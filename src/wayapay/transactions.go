@@ -27,7 +27,8 @@ type Transaction struct {
 }
 
 // Verify retrieves the current status of a transaction by reference. Use it
-// after a payout, or to confirm a collection landed.
+// after a payout, or to confirm a collection landed. This is a GET, so it is
+// retried automatically on a transient failure.
 //
 // GET /transaction/verify?reference=...
 func (s *TransactionsService) Verify(ctx context.Context, reference string) (*Transaction, error) {

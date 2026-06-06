@@ -16,7 +16,8 @@ type Bank struct {
 	Status bool   `json:"status"` // whether the bank is currently reachable
 }
 
-// List returns the supported banks with their codes.
+// List returns the supported banks with their codes. This is a GET, so it is
+// retried automatically on a transient failure.
 //
 // GET /account-enquiry/get-bank-list
 func (s *BanksService) List(ctx context.Context) ([]Bank, error) {

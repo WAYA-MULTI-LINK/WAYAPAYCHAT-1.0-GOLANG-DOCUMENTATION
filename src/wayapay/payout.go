@@ -40,7 +40,10 @@ type PayoutResult struct {
 
 // Initiate sends a payout. Verify the destination with Accounts.Verify first,
 // and supply a fresh unique Reference per payout so retries map cleanly to the
-// original record.
+// original record (GenerateReference is a convenient source).
+//
+// This is a write: it is never auto retried, so the funds move at most once per
+// call.
 //
 // POST /payment-payout/initiate
 func (s *PayoutService) Initiate(ctx context.Context, req PayoutRequest) (*PayoutResult, error) {

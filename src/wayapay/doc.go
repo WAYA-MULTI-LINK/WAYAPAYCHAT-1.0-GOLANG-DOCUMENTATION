@@ -1,5 +1,5 @@
 // Package wayapay is a Go client for the WayaPay Merchant API v2
-// (collect, payout, accounts, and identity).
+// (collect, payout, accounts, identity, and transactions).
 //
 // Construct a client with New, point it at staging while you integrate, then
 // flip the base URL to production. Every call takes a context.Context and

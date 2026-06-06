@@ -1,6 +1,9 @@
 package wayapay
 
 import (
+	"crypto/rand"
+	"encoding/hex"
+	"fmt"
 	"net/http"
 	"strings"
 	"time"
@@ -12,8 +15,9 @@ const (
 	// BaseURLStaging is the staging/sandbox environment base URL.
 	BaseURLStaging = "https://services.staging.wayapay.ng/merchant-middleware/api/v2"
 
-	defaultTimeout = 30 * time.Second
-	defaultUA      = "wayapay-go/1.0"
+	defaultTimeout    = 30 * time.Second
+	defaultUA         = "wayapay-go/1.0"
+	defaultMaxRetries = 2
 )
 
 // Client is the WayaPay Merchant API v2 client. Build it once with New and
@@ -23,6 +27,7 @@ type Client struct {
 	secretKey  string
 	baseURL    string
 	userAgent  string
+	maxRetries int
 	httpClient *http.Client
 
 	Banks        *BanksService
@@ -38,11 +43,15 @@ type Option func(*Client)
 
 // WithBaseURL overrides the API base URL. Pass BaseURLStaging while integrating.
 func WithBaseURL(url string) Option {
-	return func(c *Client) { c.baseURL = strings.TrimRight(url, "/") }
+	return func(c *Client) {
+		if url != "" {
+			c.baseURL = strings.TrimRight(url, "/")
+		}
+	}
 }
 
 // WithHTTPClient swaps the underlying *http.Client so you can control timeouts,
-// proxies, retries, or tracing.
+// proxies, custom transports, or tracing.
 func WithHTTPClient(h *http.Client) Option {
 	return func(c *Client) {
 		if h != nil {
@@ -60,6 +69,17 @@ func WithUserAgent(ua string) Option {
 	}
 }
 
+// WithMaxRetries sets how many times a GET is retried on a transient failure
+// (network error, timeout, HTTP 429, or 5xx). Writes are never auto retried.
+// The default is 2; pass 0 to disable retries entirely.
+func WithMaxRetries(n int) Option {
+	return func(c *Client) {
+		if n >= 0 {
+			c.maxRetries = n
+		}
+	}
+}
+
 // New builds a Client. merchantID is your MER_... id from the dashboard and
 // secretKey is your WAYASECK_... key. It defaults to production; pass
 // WithBaseURL(BaseURLStaging) to target staging.
@@ -69,6 +89,7 @@ func New(merchantID, secretKey string, opts ...Option) *Client {
 		secretKey:  secretKey,
 		baseURL:    BaseURLProduction,
 		userAgent:  defaultUA,
+		maxRetries: defaultMaxRetries,
 		httpClient: &http.Client{Timeout: defaultTimeout},
 	}
 	for _, o := range opts {
@@ -82,4 +103,25 @@ func New(merchantID, secretKey string, opts ...Option) *Client {
 	c.Collect = &CollectService{client: c}
 	c.Transactions = &TransactionsService{client: c}
 	return c
+}
+
+// GenerateReference produces a timestamped, collision resistant reference you
+// can use as an idempotency and reconciliation key. The shape is
+// "<prefix>-<unixMillis>-<hex>", e.g. "PAYOUT-1748160000000-A1B2C3D4".
+//
+// Generate one fresh reference per logical operation and reuse the same one on
+// retries so the gateway can fold a retry into the original record.
+func GenerateReference(prefix string) string {
+	if prefix == "" {
+		prefix = "WP"
+	}
+	ms := time.Now().UTC().UnixMilli()
+
+	var b [4]byte
+	if _, err := rand.Read(b[:]); err != nil {
+		// crypto/rand failing is effectively impossible on supported platforms;
+		// fall back to the millisecond clock so we still return a usable value.
+		return fmt.Sprintf("%s-%d-%08X", prefix, ms, ms&0xFFFFFFFF)
+	}
+	return fmt.Sprintf("%s-%d-%s", prefix, ms, strings.ToUpper(hex.EncodeToString(b[:])))
 }
