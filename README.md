@@ -20,11 +20,10 @@ import wayapay "github.com/wayapaychat/wayapay-go/src/wayapay"
 client := wayapay.New(
     "MER_...",                 // from the dashboard
     "WAYASECK_TEST_...",       // swap for WAYASECK_... on live
-    wayapay.WithBaseURL(wayapay.BaseURLStaging), // drop this for production
 )
 ```
 
-Every method takes a `context.Context` first and returns a typed struct plus an error. The client is safe to share across goroutines, so build it once at startup.
+The client targets the production base URL. Every method takes a `context.Context` first and returns a typed struct plus an error. The client is safe to share across goroutines, so build it once at startup.
 
 ## List banks
 
@@ -154,14 +153,13 @@ Input validation errors (missing required fields, malformed BVN, missing `BankCo
 
 ## Configuration options
 
-- `WithBaseURL(url)` — switch between `BaseURLStaging` and `BaseURLProduction`, or point at a mock.
+- `WithBaseURL(url)` — override `BaseURLProduction` (the default), e.g. to point at a mock.
 - `WithHTTPClient(h)` — bring your own `*http.Client` for custom timeouts, proxies, transports, or tracing.
 - `WithUserAgent(ua)` — set a custom User-Agent.
 - `WithMaxRetries(n)` — retries on GET only (default 2). Timeouts, network errors, 429, and 5xx. **Writes never auto-retry.**
 
 ```go
 client := wayapay.New(merchant, secret,
-    wayapay.WithBaseURL(wayapay.BaseURLStaging),
     wayapay.WithMaxRetries(3),
     wayapay.WithHTTPClient(&http.Client{Timeout: 15 * time.Second}),
 )
@@ -185,7 +183,7 @@ WAYA_MERCHANT_ID=MER_... WAYA_SECRET_KEY=WAYASECK_TEST_... go run ./samples
 
 ## Going live
 
-On the merchant dashboard: finish KYC, grab your Merchant ID, generate your secret key under **Settings → API Keys and Webhooks**, and whitelist your server IPs. Swap `WAYASECK_TEST_...` for `WAYASECK_...` and drop `WithBaseURL(BaseURLStaging)` — the rest of your code stays the same.
+On the merchant dashboard: finish KYC, grab your Merchant ID, generate your secret key under **Settings → API Keys and Webhooks**, and whitelist your server IPs. Swap `WAYASECK_TEST_...` for `WAYASECK_...` — the rest of your code stays the same.
 
 ## Contributing
 

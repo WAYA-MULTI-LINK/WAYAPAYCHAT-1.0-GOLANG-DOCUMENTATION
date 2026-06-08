@@ -7,7 +7,7 @@
 //	export WAYA_SECRET_KEY=WAYASECK_TEST_...
 //	go test -tags live ./tests/...
 //
-// They default to staging; set WAYA_ENV=production to target live.
+// They run against the production API; use test credentials.
 package wayapay_test
 
 import (
@@ -27,11 +27,7 @@ func liveClient(t *testing.T) *wayapay.Client {
 		t.Skip("set WAYA_MERCHANT_ID and WAYA_SECRET_KEY to run live tests")
 	}
 
-	base := wayapay.BaseURLStaging
-	if os.Getenv("WAYA_ENV") == "production" {
-		base = wayapay.BaseURLProduction
-	}
-	return wayapay.New(merchant, secret, wayapay.WithBaseURL(base))
+	return wayapay.New(merchant, secret)
 }
 
 func TestLive_BanksList(t *testing.T) {

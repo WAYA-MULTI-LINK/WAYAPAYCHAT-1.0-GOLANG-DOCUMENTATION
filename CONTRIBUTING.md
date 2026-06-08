@@ -74,7 +74,7 @@ run. They call the real WayaPay API, so you need valid credentials.
 ```bash
 export WAYA_MERCHANT_ID=MER_...
 export WAYA_SECRET_KEY=WAYASECK_TEST_...
-# optional: export WAYA_ENV=production   (defaults to staging)
+# live tests run against the production API; use test credentials
 
 go test -tags live ./tests/... -run TestLive -v
 ```

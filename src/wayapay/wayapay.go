@@ -12,8 +12,6 @@ import (
 const (
 	// BaseURLProduction is the live environment base URL.
 	BaseURLProduction = "https://services.wayapay.ng/merchant-middleware/api/v2"
-	// BaseURLStaging is the staging/sandbox environment base URL.
-	BaseURLStaging = "https://services.staging.wayapay.ng/merchant-middleware/api/v2"
 
 	defaultTimeout    = 30 * time.Second
 	defaultUA         = "wayapay-go/1.0"
@@ -41,7 +39,7 @@ type Client struct {
 // Option configures a Client at construction time.
 type Option func(*Client)
 
-// WithBaseURL overrides the API base URL. Pass BaseURLStaging while integrating.
+// WithBaseURL overrides the API base URL. Defaults to BaseURLProduction.
 func WithBaseURL(url string) Option {
 	return func(c *Client) {
 		if url != "" {
@@ -81,8 +79,8 @@ func WithMaxRetries(n int) Option {
 }
 
 // New builds a Client. merchantID is your MER_... id from the dashboard and
-// secretKey is your WAYASECK_... key. It defaults to production; pass
-// WithBaseURL(BaseURLStaging) to target staging.
+// secretKey is your WAYASECK_... key. It targets the production base URL; pass
+// WithBaseURL to override it.
 func New(merchantID, secretKey string, opts ...Option) *Client {
 	c := &Client{
 		merchantID: merchantID,

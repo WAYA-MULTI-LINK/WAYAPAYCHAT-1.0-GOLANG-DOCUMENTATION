@@ -14,7 +14,7 @@ outside the standard library.
 
 - `New(merchantID, secretKey, ...Option)` — builds a concurrency-safe client; defaults to production.
 - Functional options: `WithBaseURL`, `WithHTTPClient`, `WithUserAgent`, `WithMaxRetries`.
-- `BaseURLProduction` / `BaseURLStaging` constants.
+- `BaseURLProduction` constant (the default base URL; override with `WithBaseURL`).
 - `Banks.List` — returns all supported banks and their CBN codes.
 - `Accounts.Verify` — resolves an account number to its registered name; requires `BankCode` when `EnquiryType` is `OTHERS`.
 - `Accounts.CreateDynamicAccount` — mints a virtual NUBAN for inbound collection.

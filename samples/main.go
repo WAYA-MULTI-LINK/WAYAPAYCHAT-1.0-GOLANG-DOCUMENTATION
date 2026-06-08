@@ -1,4 +1,4 @@
-// Command sample exercises the WayaPay Go SDK end to end against staging.
+// Command sample exercises the WayaPay Go SDK end to end against production.
 //
 // Run it with your own credentials:
 //
@@ -22,11 +22,7 @@ func main() {
 		log.Fatal("set WAYA_MERCHANT_ID and WAYA_SECRET_KEY")
 	}
 
-	client := wayapay.New(
-		merchant,
-		secret,
-		wayapay.WithBaseURL(wayapay.BaseURLStaging), // drop for production
-	)
+	client := wayapay.New(merchant, secret)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
