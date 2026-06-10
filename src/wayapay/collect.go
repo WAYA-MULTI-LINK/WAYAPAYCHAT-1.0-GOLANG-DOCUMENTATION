@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"net/http"
+	"net/url"
 )
 
 // Payment link types.
@@ -91,4 +92,48 @@ func (s *CollectService) Initiate(ctx context.Context, req CollectRequest) (*Pay
 		return nil, err
 	}
 	return &out, nil
+}
+
+// CollectionStatus is the current state of a single collection (deposit)
+// transaction. Use RefNo as the idempotency key when fulfilling a SUCCESSFUL
+// payment. Interpret Status with ParsedStatus / ParseCollectionStatus.
+type CollectionStatus struct {
+	RefNo            string `json:"refNo"`
+	TranID           string `json:"tranId"`
+	MerchantID       string `json:"merchantId"`
+	Amount           string `json:"amount"`
+	CustomerEmail    string `json:"customerEmail"`
+	AmountPaid       string `json:"amountPaid"`
+	Fee              string `json:"fee"`
+	CurrencyCode     string `json:"currencyCode"`
+	Status           string `json:"status"`
+	SettlementStatus string `json:"settlementStatus"`
+	Channel          string `json:"channel"`
+	ProcessedBy      string `json:"processedBy"`
+	Description      string `json:"description"`
+	Environment      string `json:"environment"`
+	TranDate         string `json:"tranDate"`
+}
+
+// Status returns the current state of a deposit by its refNo (the gateway
+// transactionId / webhook OrderId). The deposit webhook is the primary signal;
+// this is the pull / safety-net path for reconciliation. This is a GET, so it
+// is retried automatically on a transient failure.
+//
+// GET /payment-collect/status/{refNo}
+func (s *CollectService) Status(ctx context.Context, refNo string) (*CollectionStatus, error) {
+	if refNo == "" {
+		return nil, errors.New("wayapay: refNo is required")
+	}
+
+	var out CollectionStatus
+	if err := s.client.do(ctx, http.MethodGet, "/payment-collect/status/"+url.PathEscape(refNo), nil, nil, &out); err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+// ParsedStatus parses the raw Status string into a CollectionStatusCode.
+func (s *CollectionStatus) ParsedStatus() CollectionStatusCode {
+	return ParseCollectionStatus(s.Status)
 }

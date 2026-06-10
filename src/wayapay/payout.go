@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"net/http"
+	"net/url"
 )
 
 // Transaction and payout statuses.
@@ -69,4 +70,41 @@ func (s *PayoutService) Initiate(ctx context.Context, req PayoutRequest) (*Payou
 		return nil, err
 	}
 	return &out, nil
+}
+
+// PayoutStatus is the latest state of a single payout (disbursement) by the
+// reference you sent at initiation. Use TransactionReference as the idempotency
+// key. Interpret Status with ParsedStatus / ParsePayoutStatus.
+type PayoutStatus struct {
+	TransactionReference     string `json:"transactionReference"`
+	Status                   string `json:"status"`
+	Amount                   string `json:"amount"`
+	DestinationAccountNumber string `json:"destinationAccountNumber"`
+	DestinationAccountName   string `json:"destinationAccountName"`
+	DestinationBankName      string `json:"destinationBankName"`
+	Narration                string `json:"narration"`
+	CreatedAt                string `json:"createdAt"`
+}
+
+// Status returns the latest status of a payout by the reference you sent at
+// initiation. It is scoped to the authenticated merchant: a reference belonging
+// to another merchant (or a different environment) returns a 404. This is a
+// GET, so it is retried automatically on a transient failure.
+//
+// GET /payment-payout/status/{reference}
+func (s *PayoutService) Status(ctx context.Context, reference string) (*PayoutStatus, error) {
+	if reference == "" {
+		return nil, errors.New("wayapay: reference is required")
+	}
+
+	var out PayoutStatus
+	if err := s.client.do(ctx, http.MethodGet, "/payment-payout/status/"+url.PathEscape(reference), nil, nil, &out); err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+// ParsedStatus parses the raw Status string into a PayoutStatusCode.
+func (s *PayoutStatus) ParsedStatus() PayoutStatusCode {
+	return ParsePayoutStatus(s.Status)
 }

@@ -21,12 +21,13 @@ const (
 // Client is the WayaPay Merchant API v2 client. Build it once with New and
 // reuse it across goroutines; it is safe for concurrent use.
 type Client struct {
-	merchantID string
-	secretKey  string
-	baseURL    string
-	userAgent  string
-	maxRetries int
-	httpClient *http.Client
+	merchantID    string
+	secretKey     string
+	webhookSecret string
+	baseURL       string
+	userAgent     string
+	maxRetries    int
+	httpClient    *http.Client
 
 	Banks        *BanksService
 	Accounts     *AccountsService
@@ -34,6 +35,7 @@ type Client struct {
 	Payout       *PayoutService
 	Collect      *CollectService
 	Transactions *TransactionsService
+	Webhooks     *WebhookService
 }
 
 // Option configures a Client at construction time.
@@ -64,6 +66,17 @@ func WithUserAgent(ua string) Option {
 		if ua != "" {
 			c.userAgent = ua
 		}
+	}
+}
+
+// WithWebhookSecret configures the secret used by client.Webhooks to verify
+// incoming webhook signatures. It is your merchantSecretTestKey for a TEST
+// transaction or your merchantProductionSecretKey for a PRODUCTION one. For
+// per-environment routing use the package-level ConstructEvent / VerifySignature
+// with an explicit secret instead.
+func WithWebhookSecret(secret string) Option {
+	return func(c *Client) {
+		c.webhookSecret = secret
 	}
 }
 
@@ -100,6 +113,7 @@ func New(merchantID, secretKey string, opts ...Option) *Client {
 	c.Payout = &PayoutService{client: c}
 	c.Collect = &CollectService{client: c}
 	c.Transactions = &TransactionsService{client: c}
+	c.Webhooks = &WebhookService{client: c}
 	return c
 }
 

@@ -12,6 +12,16 @@
 //
 //	banks, err := client.Banks.List(context.Background())
 //
+// Poll the state of a deposit or transfer with Collect.Status and
+// Payout.Status, then branch on the parsed code's Outcome and IsTerminal (see
+// ParseCollectionStatus and ParsePayoutStatus).
+//
+// Incoming transaction webhooks are verified offline (no network call) with
+// ConstructEvent / VerifySignature, or via client.Webhooks once a secret is set
+// with WithWebhookSecret. The signature is
+// base64(HMAC-SHA256(secret, "{timestamp}.{payload}")); ConstructEvent rejects
+// a bad signature or a stale timestamp before returning a *WebhookEvent.
+//
 // This SDK is built for server side use. Your secret key must never ship in a
 // mobile app, browser bundle, or any client the public can crack open; payout
 // authorization belongs behind your own backend.
