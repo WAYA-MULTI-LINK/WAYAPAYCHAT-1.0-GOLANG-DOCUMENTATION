@@ -13,23 +13,19 @@ src/
     wayapay.go              # Client, functional options, New(), GenerateReference()
     transport.go            # Request building, auth headers, envelope decoding, GET retry
     errors.go               # APIError + AsAPIError helper
-    banks.go                # Banks.List
-    accounts.go             # Accounts.Verify, Accounts.CreateDynamicAccount
+    payout.go               # Payout.ListBanks, VerifyAccount, Initiate, Status
+    collect.go              # Collect.Initiate, Collect.Status
     identity.go             # Identity.VerifyBVN
-    payout.go               # Payout.Initiate
-    collect.go              # Collect.Initiate
-    transactions.go         # Transactions.Verify, Transactions.History
+    webhook.go              # Webhooks.ConstructEvent, VerifySignature
 
 tests/                      # External (black-box) test package: wayapay_test
     helpers_test.go         # RoundTripper stubs + capturing transport, client builder
     factories_test.go       # Valid request builders shared across tests
     client_test.go          # Construction, headers, envelope, errors, retry, GenerateReference
-    banks_test.go           # ... one file per service
-    accounts_test.go
+    payout_test.go          # ... one file per service
     identity_test.go
-    payout_test.go
     collect_test.go
-    transactions_test.go
+    webhook_test.go
     live_test.go            # //go:build live — hits the real API, excluded by default
 
 samples/

@@ -1,8 +1,8 @@
 # wayapay-go
 
-Go client for the **WayaPay Merchant API v2**. Collect payments, send payouts, mint virtual accounts, verify bank accounts, run BVN identity checks, and reconcile transactions — all in Nigeria.
+Go client for the **WayaPay Merchant API v2**. Collect payments, send payouts, verify bank accounts, and run BVN identity checks — all in Nigeria.
 
-One client, six services, a single transport that handles auth headers and the shared response envelope so you never parse `success`/`code` by hand. No dependencies outside the standard library. **Server-side only** — your secret key must never leave your server.
+One client, four services, a single transport that handles auth headers and the shared response envelope so you never parse `success`/`code` by hand. No dependencies outside the standard library. **Server-side only** — your secret key must never leave your server.
 
 ## Install
 
@@ -28,7 +28,7 @@ The client targets the production base URL. Every method takes a `context.Contex
 ## List banks
 
 ```go
-banks, err := client.Banks.List(ctx)
+banks, err := client.Payout.ListBanks(ctx)
 // []wayapay.Bank — each has .Code and .Name
 ```
 
@@ -37,7 +37,7 @@ banks, err := client.Banks.List(ctx)
 Always verify before sending a payout — confirms the account exists and returns the registered name.
 
 ```go
-acct, err := client.Accounts.Verify(ctx, wayapay.VerifyAccountRequest{
+acct, err := client.Payout.VerifyAccount(ctx, wayapay.VerifyAccountRequest{
     AccountNumber: "0123456789",
     BankCode:      "044",                       // required when EnquiryType is OTHERS
     EnquiryType:   wayapay.EnquiryTypeOthers,   // EnquiryTypeWayaBank for intra-bank
@@ -58,6 +58,10 @@ payout, err := client.Payout.Initiate(ctx, wayapay.PayoutRequest{
     Narration:     "April salary",
 })
 // payout.Status == wayapay.StatusProcessing means accepted, not yet settled
+
+// Reconcile by the reference you sent at initiation:
+st, err := client.Payout.Status(ctx, payout.MerchantReference)
+// branch on st.ParsedStatus().Outcome() / .IsTerminal()
 ```
 
 `GenerateReference` produces a timestamped, collision-resistant key (`PAYOUT-1748160000000-A1B2C3D4`). Generate a fresh one per operation and reuse the same one on retries.
@@ -75,22 +79,13 @@ link, err := client.Collect.Initiate(ctx, wayapay.CollectRequest{
 })
 // Send the customer to link.ShortURL (or link.CustomerPaymentLink) to pay.
 // Confirm the result on your server before fulfilling the order.
+
+// Reconcile a deposit by its refNo (the gateway transactionId / webhook OrderId):
+cs, err := client.Collect.Status(ctx, refNo)
+// branch on cs.ParsedStatus().Outcome() / .IsTerminal()
 ```
 
 `Collect.Initiate` fails unless you have whitelisted your server IPs and configured payment preferences on the dashboard.
-
-## Mint a virtual account
-
-```go
-va, err := client.Accounts.CreateDynamicAccount(ctx, wayapay.DynamicAccountRequest{
-    AccountName: "ACME LTD",
-    CustomerID:  "CUST-1",
-    ReferenceID: wayapay.GenerateReference("VA"),
-    Purpose:     "Order #1234",
-    Mode:        wayapay.AccountModeOneTime,
-})
-// Hand va.VirtualAccountNumber to the customer; watch va.CanReceivePayments.
-```
 
 ## BVN identity check
 
@@ -104,38 +99,27 @@ if rec.IsWatchListed() {
 
 BVN data is sensitive personal information. Store, transmit, and log it only as your data-protection obligations allow.
 
-## Verify a transaction / pull history
-
-```go
-txn, err := client.Transactions.Verify(ctx, payout.PayoutReference)
-// txn.Status == wayapay.StatusSuccess means settled
-
-hist, err := client.Transactions.History(ctx, wayapay.HistoryParams{
-    Page: 0, Size: 20, Status: wayapay.StatusSuccess,
-})
-```
-
-A payout returning `PROCESSING` is accepted, not settled. Poll `Transactions.Verify` with the `PayoutReference` until you see `SUCCESS`.
+A payout returning `PROCESSING` is accepted, not settled. Poll `Payout.Status` with the reference until it reaches a terminal status.
 
 ## The services
 
 | Service | Method | Endpoint |
 |---|---|---|
-| `client.Banks` | `List` | `GET /account-enquiry/get-bank-list` |
-| `client.Accounts` | `Verify` | `POST /account-enquiry/verify-account` |
-| `client.Accounts` | `CreateDynamicAccount` | `POST /account-enquiry/create-dynamic-account` |
-| `client.Identity` | `VerifyBVN` | `POST /identity-verification/bvn` |
+| `client.Payout` | `ListBanks` | `GET /get-bank-list` |
+| `client.Payout` | `VerifyAccount` | `POST /verify-account` |
 | `client.Payout` | `Initiate` | `POST /payment-payout/initiate` |
+| `client.Payout` | `Status` | `GET /payment-payout/status/{reference}` |
 | `client.Collect` | `Initiate` | `POST /payment-collect/initiate` |
-| `client.Transactions` | `Verify` | `GET /transaction/verify` |
-| `client.Transactions` | `History` | `GET /transaction/history` |
+| `client.Collect` | `Status` | `GET /payment-collect/status/{refNo}` |
+| `client.Identity` | `VerifyBVN` | `POST /identity-verification/bvn` |
+| `client.Webhooks` | `ConstructEvent` / `VerifySignature` | — (verifies inbound webhooks) |
 
 ## Error handling
 
 Anything other than code `00` (or a non-envelope body) comes back as `*APIError`. Branch on the code:
 
 ```go
-acct, err := client.Accounts.Verify(ctx, req)
+acct, err := client.Payout.VerifyAccount(ctx, req)
 if err != nil {
     if ae, ok := wayapay.AsAPIError(err); ok {
         switch ae.Code {
@@ -171,7 +155,7 @@ client := wayapay.New(merchant, secret,
 
 **Money is modelled as `float64`.** The API declares amounts as `number` in the major unit, so this maps cleanly for whole-naira values. If you handle sub-unit precision and want to kill float rounding risk entirely, swap those fields for a decimal type (`shopspring/decimal`) or integer minor units in your own layer.
 
-**References are your idempotency key.** v2 dropped the separate `idempotencyKey`. The unique `Reference` on payout, `ReferenceID` on dynamic account, and `PaymentLinkReference` on collect are how retries map to the original record. `GenerateReference` gives you one per operation.
+**References are your idempotency key.** v2 dropped the separate `idempotencyKey`. The unique `Reference` on payout and `PaymentLinkReference` on collect are how retries map to the original record. `GenerateReference` gives you one per operation.
 
 ## Full example
 

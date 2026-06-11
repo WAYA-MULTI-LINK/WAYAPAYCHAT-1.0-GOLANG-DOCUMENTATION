@@ -15,13 +15,15 @@ outside the standard library.
 - `New(merchantID, secretKey, ...Option)` — builds a concurrency-safe client; defaults to production.
 - Functional options: `WithBaseURL`, `WithHTTPClient`, `WithUserAgent`, `WithMaxRetries`.
 - `BaseURLProduction` constant (the default base URL; override with `WithBaseURL`).
-- `Banks.List` — returns all supported banks and their CBN codes.
-- `Accounts.Verify` — resolves an account number to its registered name; requires `BankCode` when `EnquiryType` is `OTHERS`.
-- `Accounts.CreateDynamicAccount` — mints a virtual NUBAN for inbound collection.
-- `Identity.VerifyBVN` — verifies a BVN with a local 11-digit format check before the network call; `BVNRecord.IsWatchListed` helper.
+- Four services mirroring the .NET library: `Payout`, `Collect`, `Identity`, `Webhooks`.
+- `Payout.ListBanks` — returns all supported banks and their CBN codes.
+- `Payout.VerifyAccount` — resolves an account number to its registered name; requires `BankCode` when `EnquiryType` is `OTHERS`.
 - `Payout.Initiate` — initiates a bank transfer; `PROCESSING` means accepted, not settled.
+- `Payout.Status` — returns the latest status of a payout by the reference you sent at initiation.
 - `Collect.Initiate` — creates a payment link and returns the checkout URLs.
-- `Transactions.Verify` / `Transactions.History` — transaction status lookup and paginated, filterable history.
+- `Collect.Status` — returns the current state of a deposit by its `refNo`.
+- `Identity.VerifyBVN` — verifies a BVN with a local 11-digit format check before the network call; `BVNRecord.IsWatchListed` helper.
+- `Webhooks.ConstructEvent` / `Webhooks.VerifySignature` — verify and parse inbound transaction webhooks.
 - `GenerateReference(prefix)` — timestamped, collision-resistant idempotency key.
 - `APIError` + `AsAPIError` — typed errors carrying the API code, message, and HTTP status.
 - Automatic retry with exponential backoff on GET requests (timeouts, network errors, 429, 5xx); writes never auto-retry.

@@ -12,8 +12,7 @@ import (
 
 func TestNew_WiresUpServices(t *testing.T) {
 	c := wayapay.New("MER_X", "WAYASECK_X")
-	if c.Banks == nil || c.Accounts == nil || c.Identity == nil ||
-		c.Payout == nil || c.Collect == nil || c.Transactions == nil {
+	if c.Identity == nil || c.Payout == nil || c.Collect == nil || c.Webhooks == nil {
 		t.Fatal("expected every service to be initialised")
 	}
 }
@@ -22,7 +21,7 @@ func TestRequest_SendsAuthAndMerchantHeaders(t *testing.T) {
 	cap := &capturingTransport{status: http.StatusOK, body: `{"success":true,"code":"00","data":[]}`}
 	c := newClient(cap)
 
-	if _, err := c.Banks.List(context.Background()); err != nil {
+	if _, err := c.Payout.ListBanks(context.Background()); err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
 
@@ -42,7 +41,7 @@ func TestRequest_SetsContentTypeOnlyForWrites(t *testing.T) {
 	c := newClient(cap)
 
 	// GET: no body, no Content-Type.
-	_, _ = c.Banks.List(context.Background())
+	_, _ = c.Payout.ListBanks(context.Background())
 	if ct := cap.lastReq.Header.Get("Content-Type"); ct != "" {
 		t.Errorf("GET Content-Type = %q, want empty", ct)
 	}
@@ -57,7 +56,7 @@ func TestRequest_SetsContentTypeOnlyForWrites(t *testing.T) {
 func TestRequest_ReturnsAPIError_WhenSuccessFalse(t *testing.T) {
 	c := errStub(http.StatusBadRequest, "57", "IP is not whitelisted")
 
-	_, err := c.Banks.List(context.Background())
+	_, err := c.Payout.ListBanks(context.Background())
 	ae, ok := wayapay.AsAPIError(err)
 	if !ok {
 		t.Fatalf("expected *APIError, got %T: %v", err, err)
@@ -73,7 +72,7 @@ func TestRequest_ReturnsAPIError_WhenSuccessFalse(t *testing.T) {
 func TestRequest_ReturnsAPIError_OnNonEnvelopeBody(t *testing.T) {
 	c := stubClient(http.StatusBadGateway, "<html>502 Bad Gateway</html>")
 
-	_, err := c.Banks.List(context.Background())
+	_, err := c.Payout.ListBanks(context.Background())
 	ae, ok := wayapay.AsAPIError(err)
 	if !ok {
 		t.Fatalf("expected *APIError, got %T: %v", err, err)
@@ -95,7 +94,7 @@ func TestRequest_RetriesGetOnTransientStatus(t *testing.T) {
 	})
 	c := newClient(rt, wayapay.WithMaxRetries(2))
 
-	if _, err := c.Banks.List(context.Background()); err != nil {
+	if _, err := c.Payout.ListBanks(context.Background()); err != nil {
 		t.Fatalf("expected success after retries, got %v", err)
 	}
 	if n != 3 {
@@ -125,7 +124,7 @@ func TestRequest_PropagatesContextCancellation(t *testing.T) {
 	})
 	c := newClient(rt, wayapay.WithMaxRetries(3))
 
-	_, err := c.Banks.List(ctx)
+	_, err := c.Payout.ListBanks(ctx)
 	if !errors.Is(err, context.Canceled) {
 		t.Errorf("expected context.Canceled, got %v", err)
 	}

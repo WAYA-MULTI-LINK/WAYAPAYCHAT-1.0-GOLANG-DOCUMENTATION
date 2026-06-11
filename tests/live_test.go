@@ -35,7 +35,7 @@ func TestLive_BanksList(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	banks, err := c.Banks.List(ctx)
+	banks, err := c.Payout.ListBanks(ctx)
 	if err != nil {
 		t.Fatalf("bank list: %v", err)
 	}
@@ -50,7 +50,7 @@ func TestLive_VerifyAccount(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	acct, err := c.Accounts.Verify(ctx, wayapay.VerifyAccountRequest{
+	acct, err := c.Payout.VerifyAccount(ctx, wayapay.VerifyAccountRequest{
 		AccountNumber: os.Getenv("WAYA_TEST_ACCOUNT"),
 		BankCode:      os.Getenv("WAYA_TEST_BANK_CODE"),
 		EnquiryType:   wayapay.EnquiryTypeOthers,

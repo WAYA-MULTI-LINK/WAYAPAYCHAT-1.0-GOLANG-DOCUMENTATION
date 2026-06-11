@@ -1,5 +1,5 @@
 // Package wayapay is a Go client for the WayaPay Merchant API v2
-// (collect, payout, accounts, identity, and transactions).
+// (payout, collect, identity, and webhooks).
 //
 // Construct a client with New. It targets the production base URL; override it
 // with WithBaseURL if you need to. Every call takes a context.Context and
@@ -10,7 +10,7 @@
 //		"WAYASECK_TEST_0x3a93476a20d347d6847b62665e9ecb4b",
 //	)
 //
-//	banks, err := client.Banks.List(context.Background())
+//	banks, err := client.Payout.ListBanks(context.Background())
 //
 // Poll the state of a deposit or transfer with Collect.Status and
 // Payout.Status, then branch on the parsed code's Outcome and IsTerminal (see

@@ -32,14 +32,14 @@ func main() {
 	defer cancel()
 
 	// 1. Bank list (GET — auto retried on transient failures).
-	banks, err := client.Banks.List(ctx)
+	banks, err := client.Payout.ListBanks(ctx)
 	if err != nil {
 		log.Fatalf("bank list: %v", err)
 	}
 	fmt.Printf("got %d banks; first: %s (%s)\n", len(banks), banks[0].Name, banks[0].Code)
 
 	// 2. Verify a destination before paying it.
-	acct, err := client.Accounts.Verify(ctx, wayapay.VerifyAccountRequest{
+	acct, err := client.Payout.VerifyAccount(ctx, wayapay.VerifyAccountRequest{
 		AccountNumber: "0123456789",
 		BankCode:      "044",
 		EnquiryType:   wayapay.EnquiryTypeOthers,
@@ -112,31 +112,7 @@ func main() {
 		fmt.Println("payout still reconciling — check again later")
 	}
 
-	// 5. Verify the payout settled, branching on the typed API error.
-	txn, err := client.Transactions.Verify(ctx, payout.PayoutReference)
-	if err != nil {
-		if ae, ok := wayapay.AsAPIError(err); ok {
-			log.Fatalf("verify failed with code %s: %s", ae.Code, ae.Message)
-		}
-		log.Fatalf("verify: %v", err)
-	}
-	fmt.Printf("transaction status: %s\n", txn.Status)
-
-	// 6. Pull a page of history for reconciliation.
-	from := time.Now().AddDate(0, 0, -30)
-	hist, err := client.Transactions.History(ctx, wayapay.HistoryParams{
-		Page:   0,
-		Size:   20,
-		Status: wayapay.StatusSuccess,
-		From:   &from,
-	})
-	if err != nil {
-		log.Fatalf("history: %v", err)
-	}
-	fmt.Printf("history: %d of %d total across %d pages\n",
-		len(hist.Items), hist.TotalElements, hist.TotalPages)
-
-	// 7. Verify a webhook (offline demo). In production WayaPay POSTs this to
+	// 5. Verify a webhook (offline demo). In production WayaPay POSTs this to
 	// your HTTPS endpoint; here we sign a sample body locally to show the flow.
 	const webhookSecret = "WAYASECK_TEST_demo_webhook_secret"
 	const rawBody = `{"OrderId":"1779662251460508970","Amount":1500.00,"Fee":15.00,` +

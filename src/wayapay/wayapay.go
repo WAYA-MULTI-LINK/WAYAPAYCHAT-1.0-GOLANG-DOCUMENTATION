@@ -29,13 +29,10 @@ type Client struct {
 	maxRetries    int
 	httpClient    *http.Client
 
-	Banks        *BanksService
-	Accounts     *AccountsService
-	Identity     *IdentityService
-	Payout       *PayoutService
-	Collect      *CollectService
-	Transactions *TransactionsService
-	Webhooks     *WebhookService
+	Identity *IdentityService
+	Payout   *PayoutService
+	Collect  *CollectService
+	Webhooks *WebhookService
 }
 
 // Option configures a Client at construction time.
@@ -107,12 +104,9 @@ func New(merchantID, secretKey string, opts ...Option) *Client {
 		o(c)
 	}
 
-	c.Banks = &BanksService{client: c}
-	c.Accounts = &AccountsService{client: c}
 	c.Identity = &IdentityService{client: c}
 	c.Payout = &PayoutService{client: c}
 	c.Collect = &CollectService{client: c}
-	c.Transactions = &TransactionsService{client: c}
 	c.Webhooks = &WebhookService{client: c}
 	return c
 }
