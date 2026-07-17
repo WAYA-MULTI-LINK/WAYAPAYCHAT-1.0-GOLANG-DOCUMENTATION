@@ -1,4 +1,4 @@
-package wayapay
+package wayaquick
 
 import (
 	"bytes"
@@ -40,7 +40,7 @@ func (c *Client) do(ctx context.Context, method, path string, query url.Values, 
 	if body != nil {
 		encoded, err := json.Marshal(body)
 		if err != nil {
-			return fmt.Errorf("wayapay: encode request: %w", err)
+			return fmt.Errorf("wayaquick: encode request: %w", err)
 		}
 		raw = encoded
 	}
@@ -66,7 +66,7 @@ func (c *Client) do(ctx context.Context, method, path string, query url.Values, 
 
 		req, err := http.NewRequestWithContext(ctx, method, full, reader)
 		if err != nil {
-			return fmt.Errorf("wayapay: build request: %w", err)
+			return fmt.Errorf("wayaquick: build request: %w", err)
 		}
 		req.Header.Set("X-Merchant-Id", c.merchantID)
 		req.Header.Set("Authorization", "Bearer "+c.secretKey)
@@ -80,9 +80,9 @@ func (c *Client) do(ctx context.Context, method, path string, query url.Values, 
 		if err != nil {
 			// Honour an explicit cancellation/deadline rather than retrying it.
 			if ctx.Err() != nil {
-				return fmt.Errorf("wayapay: http call: %w", err)
+				return fmt.Errorf("wayaquick: http call: %w", err)
 			}
-			lastErr = fmt.Errorf("wayapay: http call: %w", err)
+			lastErr = fmt.Errorf("wayaquick: http call: %w", err)
 			if retryable && attempt < ceiling {
 				continue
 			}
@@ -92,7 +92,7 @@ func (c *Client) do(ctx context.Context, method, path string, query url.Values, 
 		payload, readErr := io.ReadAll(resp.Body)
 		resp.Body.Close()
 		if readErr != nil {
-			lastErr = fmt.Errorf("wayapay: read response: %w", readErr)
+			lastErr = fmt.Errorf("wayaquick: read response: %w", readErr)
 			if retryable && attempt < ceiling {
 				continue
 			}
@@ -124,7 +124,7 @@ func (c *Client) do(ctx context.Context, method, path string, query url.Values, 
 
 		if out != nil && len(env.Data) > 0 && string(env.Data) != "null" {
 			if err := json.Unmarshal(env.Data, out); err != nil {
-				return fmt.Errorf("wayapay: decode data: %w", err)
+				return fmt.Errorf("wayaquick: decode data: %w", err)
 			}
 		}
 		return nil

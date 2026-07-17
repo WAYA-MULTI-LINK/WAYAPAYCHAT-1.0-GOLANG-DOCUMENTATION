@@ -1,4 +1,4 @@
-package wayapay
+package wayaquick
 
 import (
 	"context"
@@ -68,13 +68,13 @@ type AccountVerification struct {
 // POST /verify-account
 func (s *PayoutService) VerifyAccount(ctx context.Context, req VerifyAccountRequest) (*AccountVerification, error) {
 	if req.AccountNumber == "" {
-		return nil, errors.New("wayapay: accountNumber is required")
+		return nil, errors.New("wayaquick: accountNumber is required")
 	}
 	if req.EnquiryType == "" {
-		return nil, errors.New("wayapay: enquiryType is required")
+		return nil, errors.New("wayaquick: enquiryType is required")
 	}
 	if req.EnquiryType == EnquiryTypeOthers && req.BankCode == "" {
-		return nil, errors.New("wayapay: bankCode is required when enquiryType is OTHERS")
+		return nil, errors.New("wayaquick: bankCode is required when enquiryType is OTHERS")
 	}
 
 	var out AccountVerification
@@ -117,19 +117,19 @@ type PayoutResult struct {
 func (s *PayoutService) Initiate(ctx context.Context, req PayoutRequest) (*PayoutResult, error) {
 	switch {
 	case req.Amount <= 0:
-		return nil, errors.New("wayapay: amount must be greater than zero")
+		return nil, errors.New("wayaquick: amount must be greater than zero")
 	case req.Currency == "":
-		return nil, errors.New("wayapay: currency is required")
+		return nil, errors.New("wayaquick: currency is required")
 	case req.AccountNumber == "":
-		return nil, errors.New("wayapay: accountNumber is required")
+		return nil, errors.New("wayaquick: accountNumber is required")
 	case req.BankCode == "":
-		return nil, errors.New("wayapay: bankCode is required")
+		return nil, errors.New("wayaquick: bankCode is required")
 	case req.AccountName == "":
-		return nil, errors.New("wayapay: accountName is required")
+		return nil, errors.New("wayaquick: accountName is required")
 	case req.Reference == "":
-		return nil, errors.New("wayapay: reference is required")
+		return nil, errors.New("wayaquick: reference is required")
 	case req.Narration == "":
-		return nil, errors.New("wayapay: narration is required")
+		return nil, errors.New("wayaquick: narration is required")
 	}
 
 	var out PayoutResult
@@ -161,7 +161,7 @@ type PayoutStatus struct {
 // GET /payment-payout/status/{reference}
 func (s *PayoutService) Status(ctx context.Context, reference string) (*PayoutStatus, error) {
 	if reference == "" {
-		return nil, errors.New("wayapay: reference is required")
+		return nil, errors.New("wayaquick: reference is required")
 	}
 
 	var out PayoutStatus

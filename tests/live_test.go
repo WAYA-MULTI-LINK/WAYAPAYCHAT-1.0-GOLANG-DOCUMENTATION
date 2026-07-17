@@ -1,6 +1,6 @@
 //go:build live
 
-// Live integration tests. These hit the real WayaPay API and are excluded from
+// Live integration tests. These hit the real WayaQuick API and are excluded from
 // the default test run. Enable them with the "live" build tag and real creds:
 //
 //	export WAYA_MERCHANT_ID=MER_...
@@ -8,7 +8,7 @@
 //	go test -tags live ./tests/...
 //
 // They run against the production API; use test credentials.
-package wayapay_test
+package wayaquick_test
 
 import (
 	"context"
@@ -16,10 +16,10 @@ import (
 	"testing"
 	"time"
 
-	wayapay "github.com/wayapaychat/wayapay-go/src/wayapay"
+	wayaquick "github.com/WAYA-MULTI-LINK/WAYAPAYCHAT-1.0-GOLANG-DOCUMENTATION/src/wayaquick"
 )
 
-func liveClient(t *testing.T) *wayapay.Client {
+func liveClient(t *testing.T) *wayaquick.Client {
 	t.Helper()
 	merchant := os.Getenv("WAYA_MERCHANT_ID")
 	secret := os.Getenv("WAYA_SECRET_KEY")
@@ -27,7 +27,7 @@ func liveClient(t *testing.T) *wayapay.Client {
 		t.Skip("set WAYA_MERCHANT_ID and WAYA_SECRET_KEY to run live tests")
 	}
 
-	return wayapay.New(merchant, secret)
+	return wayaquick.New(merchant, secret)
 }
 
 func TestLive_BanksList(t *testing.T) {
@@ -50,10 +50,10 @@ func TestLive_VerifyAccount(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	acct, err := c.Payout.VerifyAccount(ctx, wayapay.VerifyAccountRequest{
+	acct, err := c.Payout.VerifyAccount(ctx, wayaquick.VerifyAccountRequest{
 		AccountNumber: os.Getenv("WAYA_TEST_ACCOUNT"),
 		BankCode:      os.Getenv("WAYA_TEST_BANK_CODE"),
-		EnquiryType:   wayapay.EnquiryTypeOthers,
+		EnquiryType:   wayaquick.EnquiryTypeOthers,
 	})
 	if err != nil {
 		t.Fatalf("verify: %v", err)

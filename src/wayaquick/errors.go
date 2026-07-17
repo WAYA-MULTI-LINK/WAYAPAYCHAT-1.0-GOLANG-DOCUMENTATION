@@ -1,4 +1,4 @@
-package wayapay
+package wayaquick
 
 import (
 	"errors"
@@ -20,15 +20,15 @@ type APIError struct {
 
 func (e *APIError) Error() string {
 	if e.Code != "" {
-		return fmt.Sprintf("wayapay: api error %s: %s (http %d)", e.Code, e.Message, e.HTTPStatus)
+		return fmt.Sprintf("wayaquick: api error %s: %s (http %d)", e.Code, e.Message, e.HTTPStatus)
 	}
-	return fmt.Sprintf("wayapay: api error: %s (http %d)", e.Message, e.HTTPStatus)
+	return fmt.Sprintf("wayaquick: api error: %s (http %d)", e.Message, e.HTTPStatus)
 }
 
 // AsAPIError extracts an *APIError from err, if present, so you can read Code
 // and Message without a manual type assertion.
 //
-//	if ae, ok := wayapay.AsAPIError(err); ok && ae.Code == "07" {
+//	if ae, ok := wayaquick.AsAPIError(err); ok && ae.Code == "07" {
 //		// handle invalid account number
 //	}
 func AsAPIError(err error) (*APIError, bool) {

@@ -1,4 +1,4 @@
-package wayapay_test
+package wayaquick_test
 
 import (
 	"context"
@@ -7,11 +7,11 @@ import (
 	"strings"
 	"testing"
 
-	wayapay "github.com/wayapaychat/wayapay-go/src/wayapay"
+	wayaquick "github.com/WAYA-MULTI-LINK/WAYAPAYCHAT-1.0-GOLANG-DOCUMENTATION/src/wayaquick"
 )
 
 func TestNew_WiresUpServices(t *testing.T) {
-	c := wayapay.New("MER_X", "WAYASECK_X")
+	c := wayaquick.New("MER_X", "WAYASECK_X")
 	if c.Identity == nil || c.Payout == nil || c.Collect == nil || c.Webhooks == nil {
 		t.Fatal("expected every service to be initialised")
 	}
@@ -57,7 +57,7 @@ func TestRequest_ReturnsAPIError_WhenSuccessFalse(t *testing.T) {
 	c := errStub(http.StatusBadRequest, "57", "IP is not whitelisted")
 
 	_, err := c.Payout.ListBanks(context.Background())
-	ae, ok := wayapay.AsAPIError(err)
+	ae, ok := wayaquick.AsAPIError(err)
 	if !ok {
 		t.Fatalf("expected *APIError, got %T: %v", err, err)
 	}
@@ -73,7 +73,7 @@ func TestRequest_ReturnsAPIError_OnNonEnvelopeBody(t *testing.T) {
 	c := stubClient(http.StatusBadGateway, "<html>502 Bad Gateway</html>")
 
 	_, err := c.Payout.ListBanks(context.Background())
-	ae, ok := wayapay.AsAPIError(err)
+	ae, ok := wayaquick.AsAPIError(err)
 	if !ok {
 		t.Fatalf("expected *APIError, got %T: %v", err, err)
 	}
@@ -92,7 +92,7 @@ func TestRequest_RetriesGetOnTransientStatus(t *testing.T) {
 		}
 		return jsonResponse(http.StatusOK, `{"success":true,"code":"00","data":[]}`), nil
 	})
-	c := newClient(rt, wayapay.WithMaxRetries(2))
+	c := newClient(rt, wayaquick.WithMaxRetries(2))
 
 	if _, err := c.Payout.ListBanks(context.Background()); err != nil {
 		t.Fatalf("expected success after retries, got %v", err)
@@ -104,7 +104,7 @@ func TestRequest_RetriesGetOnTransientStatus(t *testing.T) {
 
 func TestRequest_DoesNotRetryWrites(t *testing.T) {
 	cap := &capturingTransport{status: http.StatusServiceUnavailable, body: `{"success":false,"code":"99"}`}
-	c := newClient(cap, wayapay.WithMaxRetries(5))
+	c := newClient(cap, wayaquick.WithMaxRetries(5))
 
 	_, err := c.Payout.Initiate(context.Background(), validPayout())
 	if err == nil {
@@ -122,7 +122,7 @@ func TestRequest_PropagatesContextCancellation(t *testing.T) {
 	rt := roundTripFunc(func(r *http.Request) (*http.Response, error) {
 		return nil, r.Context().Err()
 	})
-	c := newClient(rt, wayapay.WithMaxRetries(3))
+	c := newClient(rt, wayaquick.WithMaxRetries(3))
 
 	_, err := c.Payout.ListBanks(ctx)
 	if !errors.Is(err, context.Canceled) {
@@ -131,13 +131,13 @@ func TestRequest_PropagatesContextCancellation(t *testing.T) {
 }
 
 func TestGenerateReference(t *testing.T) {
-	if ref := wayapay.GenerateReference("PAYOUT"); !strings.HasPrefix(ref, "PAYOUT-") {
+	if ref := wayaquick.GenerateReference("PAYOUT"); !strings.HasPrefix(ref, "PAYOUT-") {
 		t.Errorf("ref = %q, want PAYOUT- prefix", ref)
 	}
-	if ref := wayapay.GenerateReference(""); !strings.HasPrefix(ref, "WP-") {
+	if ref := wayaquick.GenerateReference(""); !strings.HasPrefix(ref, "WP-") {
 		t.Errorf("empty prefix should default to WP-, got %q", ref)
 	}
-	if a, b := wayapay.GenerateReference("X"), wayapay.GenerateReference("X"); a == b {
+	if a, b := wayaquick.GenerateReference("X"), wayaquick.GenerateReference("X"); a == b {
 		t.Errorf("consecutive references collided: %q", a)
 	}
 }

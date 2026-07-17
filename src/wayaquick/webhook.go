@@ -1,4 +1,4 @@
-package wayapay
+package wayaquick
 
 import (
 	"crypto/hmac"
@@ -26,7 +26,7 @@ const (
 // the timestamp check (not recommended outside tests).
 const DefaultWebhookTolerance = 5 * time.Minute
 
-// WebhookEvent is a transaction webhook delivered by WayaPay when a payment
+// WebhookEvent is a transaction webhook delivered by WayaQuick when a payment
 // becomes SUCCESSFUL, PARTIAL, or FAILED. Construct one only via ConstructEvent,
 // which verifies the signature first. Use OrderID as your idempotency key — the
 // same OrderID may fire more than once (e.g. a PARTIAL followed by a SUCCESSFUL).
@@ -61,7 +61,7 @@ type WebhookCustomer struct {
 }
 
 // WebhookError is returned when a webhook fails signature verification, replay
-// checks, or cannot be parsed. It mirrors the .NET WayaPayWebhookException.
+// checks, or cannot be parsed. It mirrors the .NET WayaQuickWebhookException.
 type WebhookError struct {
 	Message string
 	Err     error // wrapped cause, when present (e.g. a JSON error)
@@ -69,9 +69,9 @@ type WebhookError struct {
 
 func (e *WebhookError) Error() string {
 	if e.Err != nil {
-		return fmt.Sprintf("wayapay: %s: %v", e.Message, e.Err)
+		return fmt.Sprintf("wayaquick: %s: %v", e.Message, e.Err)
 	}
-	return "wayapay: " + e.Message
+	return "wayaquick: " + e.Message
 }
 
 func (e *WebhookError) Unwrap() error { return e.Err }

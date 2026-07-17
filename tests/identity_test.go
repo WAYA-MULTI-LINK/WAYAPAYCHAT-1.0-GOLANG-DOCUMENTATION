@@ -1,4 +1,4 @@
-package wayapay_test
+package wayaquick_test
 
 import (
 	"context"
@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	wayapay "github.com/wayapaychat/wayapay-go/src/wayapay"
+	wayaquick "github.com/WAYA-MULTI-LINK/WAYAPAYCHAT-1.0-GOLANG-DOCUMENTATION/src/wayaquick"
 )
 
 func TestVerifyBVN_RejectsBadFormatBeforeNetwork(t *testing.T) {
@@ -64,7 +64,7 @@ func TestBVNRecord_IsWatchListed(t *testing.T) {
 		"YES":     true,
 	}
 	for in, want := range cases {
-		rec := wayapay.BVNRecord{WatchListed: in}
+		rec := wayaquick.BVNRecord{WatchListed: in}
 		if rec.IsWatchListed() != want {
 			t.Errorf("IsWatchListed(%q) = %v, want %v", in, rec.IsWatchListed(), want)
 		}

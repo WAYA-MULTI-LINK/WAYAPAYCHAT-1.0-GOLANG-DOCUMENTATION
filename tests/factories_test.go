@@ -1,9 +1,9 @@
-package wayapay_test
+package wayaquick_test
 
-import wayapay "github.com/wayapaychat/wayapay-go/src/wayapay"
+import wayaquick "github.com/WAYA-MULTI-LINK/WAYAPAYCHAT-1.0-GOLANG-DOCUMENTATION/src/wayaquick"
 
-func validPayout() wayapay.PayoutRequest {
-	return wayapay.PayoutRequest{
+func validPayout() wayaquick.PayoutRequest {
+	return wayaquick.PayoutRequest{
 		Amount:        5000,
 		Currency:      "NGN",
 		AccountNumber: "0123456789",
@@ -14,17 +14,17 @@ func validPayout() wayapay.PayoutRequest {
 	}
 }
 
-func validVerify() wayapay.VerifyAccountRequest {
-	return wayapay.VerifyAccountRequest{
+func validVerify() wayaquick.VerifyAccountRequest {
+	return wayaquick.VerifyAccountRequest{
 		AccountNumber: "0123456789",
 		BankCode:      "044",
-		EnquiryType:   wayapay.EnquiryTypeOthers,
+		EnquiryType:   wayaquick.EnquiryTypeOthers,
 	}
 }
 
-func validCollect() wayapay.CollectRequest {
-	return wayapay.CollectRequest{
-		PaymentLinkType: wayapay.PaymentLinkTypeOneTime,
+func validCollect() wayaquick.CollectRequest {
+	return wayaquick.CollectRequest{
+		PaymentLinkType: wayaquick.PaymentLinkTypeOneTime,
 		PaymentLinkName: "Order #1234",
 		Description:     "Order #1234 - 2 items",
 		PayableAmount:   1500,

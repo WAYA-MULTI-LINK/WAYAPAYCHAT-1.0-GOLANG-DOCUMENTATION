@@ -1,4 +1,4 @@
-package wayapay_test
+package wayaquick_test
 
 import (
 	"context"

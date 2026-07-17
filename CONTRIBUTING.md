@@ -8,9 +8,9 @@
 
 ```
 src/
-  wayapay/                  # The library — package wayapay, this is what callers import
+  wayaquick/                  # The library — package wayaquick, this is what callers import
     doc.go                  # Package documentation
-    wayapay.go              # Client, functional options, New(), GenerateReference()
+    wayaquick.go              # Client, functional options, New(), GenerateReference()
     transport.go            # Request building, auth headers, envelope decoding, GET retry
     errors.go               # APIError + AsAPIError helper
     payout.go               # Payout.ListBanks, VerifyAccount, Initiate, Status
@@ -18,7 +18,7 @@ src/
     identity.go             # Identity.VerifyBVN
     webhook.go              # Webhooks.ConstructEvent, VerifySignature
 
-tests/                      # External (black-box) test package: wayapay_test
+tests/                      # External (black-box) test package: wayaquick_test
     helpers_test.go         # RoundTripper stubs + capturing transport, client builder
     factories_test.go       # Valid request builders shared across tests
     client_test.go          # Construction, headers, envelope, errors, retry, GenerateReference
@@ -32,8 +32,8 @@ samples/
     main.go                 # Runnable end-to-end demo — kept in sync with the API
 ```
 
-The package lives under `src/wayapay`, so the import path is
-`github.com/wayapaychat/wayapay-go/src/wayapay`.
+The package lives under `src/wayaquick`, so the import path is
+`github.com/WAYA-MULTI-LINK/WAYAPAYCHAT-1.0-GOLANG-DOCUMENTATION/src/wayaquick`.
 
 ## Build
 
@@ -65,7 +65,7 @@ injected via `WithHTTPClient`. No credentials, no network.
 ## Run live integration tests
 
 Live tests are guarded by the `live` build tag and are excluded from the default
-run. They call the real WayaPay API, so you need valid credentials.
+run. They call the real WayaQuick API, so you need valid credentials.
 
 ```bash
 export WAYA_MERCHANT_ID=MER_...
@@ -86,7 +86,7 @@ WAYA_MERCHANT_ID=MER_... WAYA_SECRET_KEY=WAYASECK_TEST_... go run ./samples
 
 ## Adding a new feature
 
-1. Add request/response types and the method to the relevant service file under `src/wayapay/`.
+1. Add request/response types and the method to the relevant service file under `src/wayaquick/`.
 2. Validate required fields at the boundary and return a plain error before the network call.
 3. Add unit tests covering the happy path, error path, correct HTTP method/path, and request body shape.
 4. Update `samples/main.go` if the feature is user-facing.
@@ -101,6 +101,6 @@ by pushing a `v*.*.*` tag.
 
 - Run `gofmt` (or `goimports`) before committing — CI rejects unformatted code.
 - One service per file; the service struct holds only `*Client`.
-- Validate at the boundary with plain `errors.New("wayapay: ...")` messages, prefixed `wayapay:`.
+- Validate at the boundary with plain `errors.New("wayaquick: ...")` messages, prefixed `wayaquick:`.
 - Return `*APIError` for anything the server rejects, so callers can branch on `Code`.
 - No comments explaining *what* the code does — only add one when the *why* is non-obvious.

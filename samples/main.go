@@ -1,4 +1,4 @@
-// Command sample exercises the WayaPay Go SDK end to end against production.
+// Command sample exercises the WayaQuick Go SDK end to end against production.
 //
 // Run it with your own credentials:
 //
@@ -16,7 +16,7 @@ import (
 	"strconv"
 	"time"
 
-	wayapay "github.com/wayapaychat/wayapay-go/src/wayapay"
+	wayaquick "github.com/WAYA-MULTI-LINK/WAYAPAYCHAT-1.0-GOLANG-DOCUMENTATION/src/wayaquick"
 )
 
 func main() {
@@ -26,7 +26,7 @@ func main() {
 		log.Fatal("set WAYA_MERCHANT_ID and WAYA_SECRET_KEY")
 	}
 
-	client := wayapay.New(merchant, secret)
+	client := wayaquick.New(merchant, secret)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
@@ -39,10 +39,10 @@ func main() {
 	fmt.Printf("got %d banks; first: %s (%s)\n", len(banks), banks[0].Name, banks[0].Code)
 
 	// 2. Verify a destination before paying it.
-	acct, err := client.Payout.VerifyAccount(ctx, wayapay.VerifyAccountRequest{
+	acct, err := client.Payout.VerifyAccount(ctx, wayaquick.VerifyAccountRequest{
 		AccountNumber: "0123456789",
 		BankCode:      "044",
-		EnquiryType:   wayapay.EnquiryTypeOthers,
+		EnquiryType:   wayaquick.EnquiryTypeOthers,
 	})
 	if err != nil {
 		log.Fatalf("verify account: %v", err)
@@ -50,8 +50,8 @@ func main() {
 	fmt.Printf("resolved account: %s\n", acct.AccountName)
 
 	// 3. Create a payment link to collect from a customer.
-	link, err := client.Collect.Initiate(ctx, wayapay.CollectRequest{
-		PaymentLinkType: wayapay.PaymentLinkTypeOneTime,
+	link, err := client.Collect.Initiate(ctx, wayaquick.CollectRequest{
+		PaymentLinkType: wayaquick.PaymentLinkTypeOneTime,
 		PaymentLinkName: "Order #1234",
 		Description:     "Order #1234 - 2 items",
 		PayableAmount:   1500,
@@ -74,18 +74,18 @@ func main() {
 		log.Fatalf("collect status: %v", err)
 	}
 	fmt.Printf("collection %s -> %s\n", collStatus.Status, collStatus.ParsedStatus().Outcome())
-	if collStatus.ParsedStatus() == wayapay.CollectStatusSuccessful {
+	if collStatus.ParsedStatus() == wayaquick.CollectStatusSuccessful {
 		fmt.Printf("funds confirmed; fulfil order using refNo %s\n", collStatus.RefNo)
 	}
 
 	// 4. Initiate a payout with a fresh, collision-resistant reference.
-	payout, err := client.Payout.Initiate(ctx, wayapay.PayoutRequest{
+	payout, err := client.Payout.Initiate(ctx, wayaquick.PayoutRequest{
 		Amount:        25000,
 		Currency:      "NGN",
 		AccountNumber: acct.AccountNumber,
 		BankCode:      "058",
 		AccountName:   acct.AccountName,
-		Reference:     wayapay.GenerateReference("PAYOUT"),
+		Reference:     wayaquick.GenerateReference("PAYOUT"),
 		Narration:     "Salary payment",
 	})
 	if err != nil {
@@ -104,15 +104,15 @@ func main() {
 		log.Fatalf("payout status: %v", err)
 	}
 	switch poStatus.ParsedStatus().Outcome() {
-	case wayapay.PayoutSucceeded:
+	case wayaquick.PayoutSucceeded:
 		fmt.Println("payout delivered")
-	case wayapay.PayoutReversed:
+	case wayaquick.PayoutReversed:
 		fmt.Println("payout reversed — wallet re-credited")
 	default:
 		fmt.Println("payout still reconciling — check again later")
 	}
 
-	// 5. Verify a webhook (offline demo). In production WayaPay POSTs this to
+	// 5. Verify a webhook (offline demo). In production WayaQuick POSTs this to
 	// your HTTPS endpoint; here we sign a sample body locally to show the flow.
 	const webhookSecret = "WAYASECK_TEST_demo_webhook_secret"
 	const rawBody = `{"OrderId":"1779662251460508970","Amount":1500.00,"Fee":15.00,` +
@@ -124,7 +124,7 @@ func main() {
 	mac.Write([]byte(ts + "." + rawBody))
 	sig := base64.StdEncoding.EncodeToString(mac.Sum(nil))
 
-	evt, err := wayapay.ConstructEvent(rawBody, ts, sig, webhookSecret, wayapay.DefaultWebhookTolerance)
+	evt, err := wayaquick.ConstructEvent(rawBody, ts, sig, webhookSecret, wayaquick.DefaultWebhookTolerance)
 	if err != nil {
 		log.Fatalf("webhook: %v", err)
 	}

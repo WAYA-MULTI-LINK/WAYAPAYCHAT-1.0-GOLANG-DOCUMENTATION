@@ -1,4 +1,4 @@
-package wayapay
+package wayaquick
 
 import (
 	"context"
@@ -72,19 +72,19 @@ type PaymentLink struct {
 func (s *CollectService) Initiate(ctx context.Context, req CollectRequest) (*PaymentLink, error) {
 	switch {
 	case req.PaymentLinkType == "":
-		return nil, errors.New("wayapay: paymentLinkType is required")
+		return nil, errors.New("wayaquick: paymentLinkType is required")
 	case req.PaymentLinkName == "":
-		return nil, errors.New("wayapay: paymentLinkName is required")
+		return nil, errors.New("wayaquick: paymentLinkName is required")
 	case req.Description == "":
-		return nil, errors.New("wayapay: description is required")
+		return nil, errors.New("wayaquick: description is required")
 	case req.PayableAmount <= 0:
-		return nil, errors.New("wayapay: payableAmount must be greater than zero")
+		return nil, errors.New("wayaquick: payableAmount must be greater than zero")
 	case req.Currency == "":
-		return nil, errors.New("wayapay: currency is required")
+		return nil, errors.New("wayaquick: currency is required")
 	case req.RedirectLink == "":
-		return nil, errors.New("wayapay: redirectLink is required")
+		return nil, errors.New("wayaquick: redirectLink is required")
 	case req.LinkCanExpire && req.ExpiryDate == "":
-		return nil, errors.New("wayapay: expiryDate is required when linkCanExpire is true")
+		return nil, errors.New("wayaquick: expiryDate is required when linkCanExpire is true")
 	}
 
 	var out PaymentLink
@@ -123,7 +123,7 @@ type CollectionStatus struct {
 // GET /payment-collect/status/{refNo}
 func (s *CollectService) Status(ctx context.Context, refNo string) (*CollectionStatus, error) {
 	if refNo == "" {
-		return nil, errors.New("wayapay: refNo is required")
+		return nil, errors.New("wayaquick: refNo is required")
 	}
 
 	var out CollectionStatus

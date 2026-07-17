@@ -1,4 +1,4 @@
-package wayapay_test
+package wayaquick_test
 
 import (
 	"io"
@@ -6,7 +6,7 @@ import (
 	"strings"
 	"sync/atomic"
 
-	wayapay "github.com/wayapaychat/wayapay-go/src/wayapay"
+	wayaquick "github.com/WAYA-MULTI-LINK/WAYAPAYCHAT-1.0-GOLANG-DOCUMENTATION/src/wayaquick"
 )
 
 // roundTripFunc adapts a function into an http.RoundTripper so tests can stand
@@ -26,7 +26,7 @@ func jsonResponse(status int, body string) *http.Response {
 
 // stubClient returns a client whose every request resolves to the given status
 // and body. Use it for happy-path and error-path assertions.
-func stubClient(status int, body string) *wayapay.Client {
+func stubClient(status int, body string) *wayaquick.Client {
 	rt := roundTripFunc(func(*http.Request) (*http.Response, error) {
 		return jsonResponse(status, body), nil
 	})
@@ -34,12 +34,12 @@ func stubClient(status int, body string) *wayapay.Client {
 }
 
 // okStub wraps data in the success envelope the API returns.
-func okStub(data string) *wayapay.Client {
+func okStub(data string) *wayaquick.Client {
 	return stubClient(http.StatusOK, `{"success":true,"code":"00","data":`+data+`}`)
 }
 
 // errStub wraps an error envelope the API returns when success is false.
-func errStub(status int, code, message string) *wayapay.Client {
+func errStub(status int, code, message string) *wayaquick.Client {
 	return stubClient(status, `{"success":false,"code":"`+code+`","message":"`+message+`"}`)
 }
 
@@ -65,11 +65,11 @@ func (c *capturingTransport) RoundTrip(r *http.Request) (*http.Response, error) 
 
 func (c *capturingTransport) Calls() int { return int(atomic.LoadInt32(&c.calls)) }
 
-func newClient(rt http.RoundTripper, opts ...wayapay.Option) *wayapay.Client {
-	base := []wayapay.Option{
-		wayapay.WithBaseURL("https://api.test"),
-		wayapay.WithHTTPClient(&http.Client{Transport: rt}),
-		wayapay.WithMaxRetries(0), // deterministic by default; opt back in per test
+func newClient(rt http.RoundTripper, opts ...wayaquick.Option) *wayaquick.Client {
+	base := []wayaquick.Option{
+		wayaquick.WithBaseURL("https://api.test"),
+		wayaquick.WithHTTPClient(&http.Client{Transport: rt}),
+		wayaquick.WithMaxRetries(0), // deterministic by default; opt back in per test
 	}
-	return wayapay.New("MER_TEST", "WAYASECK_TEST_key", append(base, opts...)...)
+	return wayaquick.New("MER_TEST", "WAYASECK_TEST_key", append(base, opts...)...)
 }

@@ -1,4 +1,4 @@
-package wayapay_test
+package wayaquick_test
 
 import (
 	"context"
@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	wayapay "github.com/wayapaychat/wayapay-go/src/wayapay"
+	wayaquick "github.com/WAYA-MULTI-LINK/WAYAPAYCHAT-1.0-GOLANG-DOCUMENTATION/src/wayaquick"
 )
 
 func TestListBanks_ReturnsBanks(t *testing.T) {
@@ -54,9 +54,9 @@ func TestVerifyAccount_ErrorsWhenBankCodeMissingForOthers(t *testing.T) {
 func TestVerifyAccount_AllowsWayaBankWithoutBankCode(t *testing.T) {
 	c := okStub(`{"successful":true,"accountNumber":"0123456789","accountName":"JOHN DOE"}`)
 
-	out, err := c.Payout.VerifyAccount(context.Background(), wayapay.VerifyAccountRequest{
+	out, err := c.Payout.VerifyAccount(context.Background(), wayaquick.VerifyAccountRequest{
 		AccountNumber: "0123456789",
-		EnquiryType:   wayapay.EnquiryTypeWayaBank,
+		EnquiryType:   wayaquick.EnquiryTypeWayaBank,
 	})
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)

@@ -1,4 +1,4 @@
-package wayapay
+package wayaquick
 
 import (
 	"crypto/rand"
@@ -14,11 +14,11 @@ const (
 	BaseURLProduction = "https://services.wayapay.ng/merchant-middleware/api/v2"
 
 	defaultTimeout    = 30 * time.Second
-	defaultUA         = "wayapay-go/1.0"
+	defaultUA         = "wayaquick-go/1.0"
 	defaultMaxRetries = 2
 )
 
-// Client is the WayaPay Merchant API v2 client. Build it once with New and
+// Client is the WayaQuick Merchant API v2 client. Build it once with New and
 // reuse it across goroutines; it is safe for concurrent use.
 type Client struct {
 	merchantID    string

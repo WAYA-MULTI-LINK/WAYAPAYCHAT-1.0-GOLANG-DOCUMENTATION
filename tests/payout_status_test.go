@@ -1,4 +1,4 @@
-package wayapay_test
+package wayaquick_test
 
 import (
 	"context"
@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	wayapay "github.com/wayapaychat/wayapay-go/src/wayapay"
+	wayaquick "github.com/WAYA-MULTI-LINK/WAYAPAYCHAT-1.0-GOLANG-DOCUMENTATION/src/wayaquick"
 )
 
 func TestPayoutStatus_RequiresReference(t *testing.T) {
@@ -44,7 +44,7 @@ func TestPayoutStatus_DecodesSuccess(t *testing.T) {
 	if out.TransactionReference != "PAYOUT-001" || out.Status != "SUCCESS" {
 		t.Errorf("decoded wrong: %+v", out)
 	}
-	if out.ParsedStatus() != wayapay.PayoutStatusSuccess {
+	if out.ParsedStatus() != wayaquick.PayoutStatusSuccess {
 		t.Errorf("parsed = %v", out.ParsedStatus())
 	}
 }
@@ -52,17 +52,17 @@ func TestPayoutStatus_DecodesSuccess(t *testing.T) {
 func TestPayoutStatus_OutcomeAndTerminal(t *testing.T) {
 	cases := []struct {
 		raw      string
-		outcome  wayapay.PayoutOutcome
+		outcome  wayaquick.PayoutOutcome
 		terminal bool
 	}{
-		{"PENDING", wayapay.PayoutReconciling, false},
-		{"SUCCESS", wayapay.PayoutSucceeded, true},
-		{"REVERSED", wayapay.PayoutReversed, true},
-		{"weird", wayapay.PayoutReconciling, false},
+		{"PENDING", wayaquick.PayoutReconciling, false},
+		{"SUCCESS", wayaquick.PayoutSucceeded, true},
+		{"REVERSED", wayaquick.PayoutReversed, true},
+		{"weird", wayaquick.PayoutReconciling, false},
 	}
 	for _, tc := range cases {
 		t.Run(tc.raw, func(t *testing.T) {
-			code := wayapay.ParsePayoutStatus(tc.raw)
+			code := wayaquick.ParsePayoutStatus(tc.raw)
 			if got := code.Outcome(); got != tc.outcome {
 				t.Errorf("Outcome(%q) = %v, want %v", tc.raw, got, tc.outcome)
 			}

@@ -1,13 +1,13 @@
-# wayapay-go
+# WayaQuick Go SDK
 
-Go client for the **WayaPay Merchant API v2**. Collect payments, send payouts, verify bank accounts, and run BVN identity checks — all in Nigeria.
+Go client for the **WayaQuick Merchant API v2**. Collect payments, send payouts, verify bank accounts, and run BVN identity checks — all in Nigeria.
 
 One client, four services, a single transport that handles auth headers and the shared response envelope so you never parse `success`/`code` by hand. No dependencies outside the standard library. **Server-side only** — your secret key must never leave your server.
 
 ## Install
 
 ```bash
-go get github.com/wayapaychat/wayapay-go/src/wayapay
+go get github.com/WAYA-MULTI-LINK/WAYAPAYCHAT-1.0-GOLANG-DOCUMENTATION/src/wayaquick
 ```
 
 Rename the module path in `go.mod` if you host this somewhere else.
@@ -15,9 +15,9 @@ Rename the module path in `go.mod` if you host this somewhere else.
 ## Quickstart
 
 ```go
-import wayapay "github.com/wayapaychat/wayapay-go/src/wayapay"
+import wayaquick "github.com/WAYA-MULTI-LINK/WAYAPAYCHAT-1.0-GOLANG-DOCUMENTATION/src/wayaquick"
 
-client := wayapay.New(
+client := wayaquick.New(
     "MER_...",                 // from the dashboard
     "WAYASECK_TEST_...",       // swap for WAYASECK_... on live
 )
@@ -29,7 +29,7 @@ The client targets the production base URL. Every method takes a `context.Contex
 
 ```go
 banks, err := client.Payout.ListBanks(ctx)
-// []wayapay.Bank — each has .Code and .Name
+// []wayaquick.Bank — each has .Code and .Name
 ```
 
 ## Verify an account
@@ -37,10 +37,10 @@ banks, err := client.Payout.ListBanks(ctx)
 Always verify before sending a payout — confirms the account exists and returns the registered name.
 
 ```go
-acct, err := client.Payout.VerifyAccount(ctx, wayapay.VerifyAccountRequest{
+acct, err := client.Payout.VerifyAccount(ctx, wayaquick.VerifyAccountRequest{
     AccountNumber: "0123456789",
     BankCode:      "044",                       // required when EnquiryType is OTHERS
-    EnquiryType:   wayapay.EnquiryTypeOthers,   // EnquiryTypeWayaBank for intra-bank
+    EnquiryType:   wayaquick.EnquiryTypeOthers,   // EnquiryTypeWayaBank for intra-bank
 })
 fmt.Println(acct.AccountName) // "JOHN DOE"
 ```
@@ -48,16 +48,16 @@ fmt.Println(acct.AccountName) // "JOHN DOE"
 ## Initiate a payout
 
 ```go
-payout, err := client.Payout.Initiate(ctx, wayapay.PayoutRequest{
+payout, err := client.Payout.Initiate(ctx, wayaquick.PayoutRequest{
     Amount:        25000,
     Currency:      "NGN",
     AccountNumber: acct.AccountNumber,
     BankCode:      "058",
     AccountName:   acct.AccountName,
-    Reference:     wayapay.GenerateReference("PAYOUT"),
+    Reference:     wayaquick.GenerateReference("PAYOUT"),
     Narration:     "April salary",
 })
-// payout.Status == wayapay.StatusProcessing means accepted, not yet settled
+// payout.Status == wayaquick.StatusProcessing means accepted, not yet settled
 
 // Reconcile by the reference you sent at initiation:
 st, err := client.Payout.Status(ctx, payout.MerchantReference)
@@ -69,8 +69,8 @@ st, err := client.Payout.Status(ctx, payout.MerchantReference)
 ## Collect a payment
 
 ```go
-link, err := client.Collect.Initiate(ctx, wayapay.CollectRequest{
-    PaymentLinkType: wayapay.PaymentLinkTypeOneTime,
+link, err := client.Collect.Initiate(ctx, wayaquick.CollectRequest{
+    PaymentLinkType: wayaquick.PaymentLinkTypeOneTime,
     PaymentLinkName: "Order #1234",
     Description:     "Order #1234 - 2 items",
     PayableAmount:   1500,
@@ -121,7 +121,7 @@ Anything other than code `00` (or a non-envelope body) comes back as `*APIError`
 ```go
 acct, err := client.Payout.VerifyAccount(ctx, req)
 if err != nil {
-    if ae, ok := wayapay.AsAPIError(err); ok {
+    if ae, ok := wayaquick.AsAPIError(err); ok {
         switch ae.Code {
         case "07":
             // invalid account number — surface a friendly message
@@ -143,9 +143,9 @@ Input validation errors (missing required fields, malformed BVN, missing `BankCo
 - `WithMaxRetries(n)` — retries on GET only (default 2). Timeouts, network errors, 429, and 5xx. **Writes never auto-retry.**
 
 ```go
-client := wayapay.New(merchant, secret,
-    wayapay.WithMaxRetries(3),
-    wayapay.WithHTTPClient(&http.Client{Timeout: 15 * time.Second}),
+client := wayaquick.New(merchant, secret,
+    wayaquick.WithMaxRetries(3),
+    wayaquick.WithHTTPClient(&http.Client{Timeout: 15 * time.Second}),
 )
 ```
 

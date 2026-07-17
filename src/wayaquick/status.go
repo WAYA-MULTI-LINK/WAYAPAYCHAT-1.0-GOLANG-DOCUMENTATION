@@ -1,4 +1,4 @@
-package wayapay
+package wayaquick
 
 import "strings"
 

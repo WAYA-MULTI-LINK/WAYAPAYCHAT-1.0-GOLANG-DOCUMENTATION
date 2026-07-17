@@ -5,9 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org).
 
+## [1.0.1] - 2026-07-17
+
+Renamed WayaPay → WayaQuick, matching the Java (`wayaquick-integration`) and .NET (`WayaQuick.Integration`) SDKs. No functional changes.
+
+### Changed
+
+- Module path is now `github.com/WAYA-MULTI-LINK/WAYAPAYCHAT-1.0-GOLANG-DOCUMENTATION` (was `github.com/wayapaychat/wayapay-go`), matching the repository the code is actually hosted in so `go get` works
+- Package renamed `wayapay` → `wayaquick`: import `github.com/WAYA-MULTI-LINK/WAYAPAYCHAT-1.0-GOLANG-DOCUMENTATION/src/wayaquick`
+
 ## [1.0.0] - 2026-06-06
 
-First release. A Go client for the WayaPay Merchant API v2 with no dependencies
+First release. A Go client for the WayaQuick Merchant API v2 with no dependencies
 outside the standard library.
 
 ### Added

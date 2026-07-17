@@ -1,4 +1,4 @@
-package wayapay_test
+package wayaquick_test
 
 import (
 	"crypto/hmac"
@@ -10,7 +10,7 @@ import (
 	"testing"
 	"time"
 
-	wayapay "github.com/wayapaychat/wayapay-go/src/wayapay"
+	wayaquick "github.com/WAYA-MULTI-LINK/WAYAPAYCHAT-1.0-GOLANG-DOCUMENTATION/src/wayaquick"
 )
 
 const webhookSecret = "WAYASECK_TEST_demo_webhook_secret"
@@ -35,7 +35,7 @@ func TestWebhook_ValidSignatureParses(t *testing.T) {
 	ts := nowMillis()
 	sig := signWebhook(ts, webhookBody, webhookSecret)
 
-	evt, err := wayapay.ConstructEvent(webhookBody, ts, sig, webhookSecret, wayapay.DefaultWebhookTolerance)
+	evt, err := wayaquick.ConstructEvent(webhookBody, ts, sig, webhookSecret, wayaquick.DefaultWebhookTolerance)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -57,7 +57,7 @@ func TestWebhook_WrongSecretRejected(t *testing.T) {
 	ts := nowMillis()
 	sig := signWebhook(ts, webhookBody, webhookSecret)
 
-	if _, err := wayapay.ConstructEvent(webhookBody, ts, sig, "OTHER_SECRET", wayapay.DefaultWebhookTolerance); err == nil ||
+	if _, err := wayaquick.ConstructEvent(webhookBody, ts, sig, "OTHER_SECRET", wayaquick.DefaultWebhookTolerance); err == nil ||
 		!strings.Contains(err.Error(), "signature") {
 		t.Errorf("wrong secret: got %v", err)
 	}
@@ -68,7 +68,7 @@ func TestWebhook_TamperedBodyRejected(t *testing.T) {
 	sig := signWebhook(ts, webhookBody, webhookSecret)
 	tampered := strings.Replace(webhookBody, "1500.00", "9999.00", 1)
 
-	if _, err := wayapay.ConstructEvent(tampered, ts, sig, webhookSecret, wayapay.DefaultWebhookTolerance); err == nil ||
+	if _, err := wayaquick.ConstructEvent(tampered, ts, sig, webhookSecret, wayaquick.DefaultWebhookTolerance); err == nil ||
 		!strings.Contains(err.Error(), "signature") {
 		t.Errorf("tampered body: got %v", err)
 	}
@@ -78,7 +78,7 @@ func TestWebhook_StaleTimestampRejected(t *testing.T) {
 	ts := strconv.FormatInt(time.Now().Add(-10*time.Minute).UnixMilli(), 10)
 	sig := signWebhook(ts, webhookBody, webhookSecret)
 
-	if _, err := wayapay.ConstructEvent(webhookBody, ts, sig, webhookSecret, wayapay.DefaultWebhookTolerance); err == nil ||
+	if _, err := wayaquick.ConstructEvent(webhookBody, ts, sig, webhookSecret, wayaquick.DefaultWebhookTolerance); err == nil ||
 		!strings.Contains(err.Error(), "tolerance") {
 		t.Errorf("stale timestamp: got %v", err)
 	}
@@ -89,7 +89,7 @@ func TestWebhook_DisabledReplayAcceptsStale(t *testing.T) {
 	sig := signWebhook(ts, webhookBody, webhookSecret)
 
 	// A negative tolerance disables the timestamp check.
-	if _, err := wayapay.ConstructEvent(webhookBody, ts, sig, webhookSecret, -1); err != nil {
+	if _, err := wayaquick.ConstructEvent(webhookBody, ts, sig, webhookSecret, -1); err != nil {
 		t.Errorf("disabled replay should accept stale: %v", err)
 	}
 }
@@ -98,21 +98,21 @@ func TestWebhook_VerifySignature(t *testing.T) {
 	ts := nowMillis()
 	sig := signWebhook(ts, webhookBody, webhookSecret)
 
-	if !wayapay.VerifySignature(webhookBody, ts, sig, webhookSecret) {
+	if !wayaquick.VerifySignature(webhookBody, ts, sig, webhookSecret) {
 		t.Errorf("valid signature returned false")
 	}
 	// Missing inputs.
-	if wayapay.VerifySignature(webhookBody, "", sig, webhookSecret) {
+	if wayaquick.VerifySignature(webhookBody, "", sig, webhookSecret) {
 		t.Errorf("empty timestamp should be false")
 	}
-	if wayapay.VerifySignature(webhookBody, ts, "", webhookSecret) {
+	if wayaquick.VerifySignature(webhookBody, ts, "", webhookSecret) {
 		t.Errorf("empty signature should be false")
 	}
-	if wayapay.VerifySignature(webhookBody, ts, sig, "") {
+	if wayaquick.VerifySignature(webhookBody, ts, sig, "") {
 		t.Errorf("empty secret should be false")
 	}
 	// Malformed base64.
-	if wayapay.VerifySignature(webhookBody, ts, "not!!base64", webhookSecret) {
+	if wayaquick.VerifySignature(webhookBody, ts, "not!!base64", webhookSecret) {
 		t.Errorf("malformed base64 should be false")
 	}
 }
@@ -122,7 +122,7 @@ func TestWebhook_InvalidJSONWithValidSignature(t *testing.T) {
 	ts := nowMillis()
 	sig := signWebhook(ts, body, webhookSecret)
 
-	if _, err := wayapay.ConstructEvent(body, ts, sig, webhookSecret, wayapay.DefaultWebhookTolerance); err == nil ||
+	if _, err := wayaquick.ConstructEvent(body, ts, sig, webhookSecret, wayaquick.DefaultWebhookTolerance); err == nil ||
 		!strings.Contains(err.Error(), "JSON") {
 		t.Errorf("invalid JSON: got %v", err)
 	}
@@ -131,17 +131,17 @@ func TestWebhook_InvalidJSONWithValidSignature(t *testing.T) {
 func TestParseWebhookStatus(t *testing.T) {
 	cases := []struct {
 		raw  string
-		want wayapay.WebhookStatusCode
+		want wayaquick.WebhookStatusCode
 	}{
-		{"SUCCESSFUL", wayapay.WebhookStatusSuccessful},
-		{" successful ", wayapay.WebhookStatusSuccessful},
-		{"PARTIAL", wayapay.WebhookStatusPartial},
-		{"FAILED", wayapay.WebhookStatusFailed},
-		{"nope", wayapay.WebhookStatusUnknown},
-		{"", wayapay.WebhookStatusUnknown},
+		{"SUCCESSFUL", wayaquick.WebhookStatusSuccessful},
+		{" successful ", wayaquick.WebhookStatusSuccessful},
+		{"PARTIAL", wayaquick.WebhookStatusPartial},
+		{"FAILED", wayaquick.WebhookStatusFailed},
+		{"nope", wayaquick.WebhookStatusUnknown},
+		{"", wayaquick.WebhookStatusUnknown},
 	}
 	for _, tc := range cases {
-		if got := wayapay.ParseWebhookStatus(tc.raw); got != tc.want {
+		if got := wayaquick.ParseWebhookStatus(tc.raw); got != tc.want {
 			t.Errorf("ParseWebhookStatus(%q) = %v, want %v", tc.raw, got, tc.want)
 		}
 	}
@@ -151,12 +151,12 @@ func TestWebhookService_ConfiguredSecret(t *testing.T) {
 	rt := roundTripFunc(func(*http.Request) (*http.Response, error) {
 		return jsonResponse(http.StatusOK, `{}`), nil
 	})
-	c := newClient(rt, wayapay.WithWebhookSecret(webhookSecret))
+	c := newClient(rt, wayaquick.WithWebhookSecret(webhookSecret))
 
 	ts := nowMillis()
 	sig := signWebhook(ts, webhookBody, webhookSecret)
 
-	evt, err := c.Webhooks.ConstructEvent(webhookBody, ts, sig, wayapay.DefaultWebhookTolerance)
+	evt, err := c.Webhooks.ConstructEvent(webhookBody, ts, sig, wayaquick.DefaultWebhookTolerance)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -177,7 +177,7 @@ func TestWebhookService_NoSecretConfigured(t *testing.T) {
 	ts := nowMillis()
 	sig := signWebhook(ts, webhookBody, webhookSecret)
 
-	if _, err := c.Webhooks.ConstructEvent(webhookBody, ts, sig, wayapay.DefaultWebhookTolerance); err == nil ||
+	if _, err := c.Webhooks.ConstructEvent(webhookBody, ts, sig, wayaquick.DefaultWebhookTolerance); err == nil ||
 		!strings.Contains(err.Error(), "secret") {
 		t.Errorf("no secret configured: got %v", err)
 	}

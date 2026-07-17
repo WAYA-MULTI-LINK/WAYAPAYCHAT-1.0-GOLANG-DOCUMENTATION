@@ -1,4 +1,4 @@
-package wayapay
+package wayaquick
 
 import (
 	"context"
@@ -59,7 +59,7 @@ func isElevenDigits(s string) bool {
 // POST /identity-verification/bvn
 func (s *IdentityService) VerifyBVN(ctx context.Context, bvn string) (*BVNRecord, error) {
 	if !isElevenDigits(bvn) {
-		return nil, errors.New("wayapay: bvn must be exactly 11 digits")
+		return nil, errors.New("wayaquick: bvn must be exactly 11 digits")
 	}
 
 	body := map[string]string{"bvn": bvn}

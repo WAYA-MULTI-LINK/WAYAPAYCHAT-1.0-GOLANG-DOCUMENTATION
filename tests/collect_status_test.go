@@ -1,4 +1,4 @@
-package wayapay_test
+package wayaquick_test
 
 import (
 	"context"
@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	wayapay "github.com/wayapaychat/wayapay-go/src/wayapay"
+	wayaquick "github.com/WAYA-MULTI-LINK/WAYAPAYCHAT-1.0-GOLANG-DOCUMENTATION/src/wayaquick"
 )
 
 func TestCollectStatus_RequiresRefNo(t *testing.T) {
@@ -46,7 +46,7 @@ func TestCollectStatus_DecodesSuccessful(t *testing.T) {
 	if out.RefNo != "177966" || out.Status != "SUCCESSFUL" || out.AmountPaid != "1500.00" {
 		t.Errorf("decoded wrong: %+v", out)
 	}
-	if out.ParsedStatus() != wayapay.CollectStatusSuccessful {
+	if out.ParsedStatus() != wayaquick.CollectStatusSuccessful {
 		t.Errorf("parsed = %v", out.ParsedStatus())
 	}
 }
@@ -54,20 +54,20 @@ func TestCollectStatus_DecodesSuccessful(t *testing.T) {
 func TestCollectStatus_OutcomeAndTerminal(t *testing.T) {
 	cases := []struct {
 		raw      string
-		outcome  wayapay.CollectionOutcome
+		outcome  wayaquick.CollectionOutcome
 		terminal bool
 	}{
-		{"PENDING", wayapay.CollectionInFlight, false},
-		{"PARTIAL", wayapay.CollectionInFlight, false},
-		{"SUCCESSFUL", wayapay.CollectionSucceeded, true},
-		{"REFUNDED", wayapay.CollectionRefunded, true},
-		{"DECLINED", wayapay.CollectionNotDebited, true},
-		{"BANK_ERROR", wayapay.CollectionIndeterminate, true},
-		{"something-new", wayapay.CollectionIndeterminate, false},
+		{"PENDING", wayaquick.CollectionInFlight, false},
+		{"PARTIAL", wayaquick.CollectionInFlight, false},
+		{"SUCCESSFUL", wayaquick.CollectionSucceeded, true},
+		{"REFUNDED", wayaquick.CollectionRefunded, true},
+		{"DECLINED", wayaquick.CollectionNotDebited, true},
+		{"BANK_ERROR", wayaquick.CollectionIndeterminate, true},
+		{"something-new", wayaquick.CollectionIndeterminate, false},
 	}
 	for _, tc := range cases {
 		t.Run(tc.raw, func(t *testing.T) {
-			code := wayapay.ParseCollectionStatus(tc.raw)
+			code := wayaquick.ParseCollectionStatus(tc.raw)
 			if got := code.Outcome(); got != tc.outcome {
 				t.Errorf("Outcome(%q) = %v, want %v", tc.raw, got, tc.outcome)
 			}

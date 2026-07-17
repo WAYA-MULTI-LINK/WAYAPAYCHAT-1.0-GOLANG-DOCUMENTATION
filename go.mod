@@ -1,3 +1,3 @@
-module github.com/wayapaychat/wayapay-go
+module github.com/WAYA-MULTI-LINK/WAYAPAYCHAT-1.0-GOLANG-DOCUMENTATION
 
 go 1.21
