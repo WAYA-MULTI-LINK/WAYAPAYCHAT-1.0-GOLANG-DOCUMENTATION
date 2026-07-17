@@ -97,6 +97,45 @@ WAYA_MERCHANT_ID=MER_... WAYA_SECRET_KEY=WAYASECK_TEST_... go run ./samples
 This project follows [Semantic Versioning](https://semver.org). Releases are cut
 by pushing a `v*.*.*` tag.
 
+## Releasing & publishing
+
+Unlike the Java (Maven Central) and .NET (nuget.org) SDKs, Go has no package
+registry to push to — consumers fetch the module straight from this GitHub
+repository, and [pkg.go.dev](https://pkg.go.dev) indexes it automatically the
+first time someone requests it. Publishing a release is just tagging.
+
+### Cutting a release
+
+1. Add an entry to `CHANGELOG.md` (there is no version field to bump — the git
+   tag *is* the version).
+2. Commit everything, then tag and push:
+
+   ```bash
+   git tag v<x.y.z>
+   git push origin main v<x.y.z>
+   ```
+
+3. Verify consumers can fetch it:
+
+   ```bash
+   go get github.com/WAYA-MULTI-LINK/WAYAPAYCHAT-1.0-GOLANG-DOCUMENTATION/src/wayaquick@v<x.y.z>
+   ```
+
+   and import it as:
+
+   ```go
+   import wayaquick "github.com/WAYA-MULTI-LINK/WAYAPAYCHAT-1.0-GOLANG-DOCUMENTATION/src/wayaquick"
+   ```
+
+> **Caution — published versions are permanent.** The Go module proxy
+> (proxy.golang.org) caches a tagged version forever the first time anyone
+> fetches it; deleting or re-pointing a tag on GitHub does **not** remove it
+> from the proxy. Never reuse a version number — always cut a new patch tag.
+> The repository must stay **public**, and the `module` line in `go.mod` must
+> always match this repo's URL exactly, or `go get` refuses to fetch it. For
+> the same reason, renaming the repository is a breaking change for every
+> consumer's import lines — avoid it.
+
 ## Code style
 
 - Run `gofmt` (or `goimports`) before committing — CI rejects unformatted code.

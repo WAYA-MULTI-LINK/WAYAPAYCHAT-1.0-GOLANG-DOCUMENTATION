@@ -7,10 +7,16 @@ One client, four services, a single transport that handles auth headers and the 
 ## Install
 
 ```bash
-go get github.com/WAYA-MULTI-LINK/WAYAPAYCHAT-1.0-GOLANG-DOCUMENTATION/src/wayaquick
+go get github.com/WAYA-MULTI-LINK/WAYAPAYCHAT-1.0-GOLANG-DOCUMENTATION/src/wayaquick@v1.0.1
 ```
 
-Rename the module path in `go.mod` if you host this somewhere else.
+(Or omit `@v1.0.1` to get the latest tagged version.) Then import it as:
+
+```go
+import wayaquick "github.com/WAYA-MULTI-LINK/WAYAPAYCHAT-1.0-GOLANG-DOCUMENTATION/src/wayaquick"
+```
+
+There is no separate package registry — Go fetches the module straight from this GitHub repository, so all that's needed for a release is a pushed `v*.*.*` tag (see [CONTRIBUTING.md](CONTRIBUTING.md)).
 
 ## Quickstart
 
