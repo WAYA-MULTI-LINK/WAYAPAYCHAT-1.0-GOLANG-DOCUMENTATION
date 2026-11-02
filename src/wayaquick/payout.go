@@ -16,8 +16,9 @@ const (
 
 // Enquiry types for account verification.
 const (
-	EnquiryTypeOthers   = "OTHERS"   // any external bank
-	EnquiryTypeWayaBank = "WAYABANK" // internal WayaBank account
+	EnquiryTypeOthers      = "OTHERS"    // any external bank
+	EnquiryTypeWayaBank    = "WAYA-BANK" // internal WayaBank account (per standard docs)
+	EnquiryTypeWayaBankAlt = "WAYABANK"  // accepted alternate without hyphen
 )
 
 // PayoutService covers bank lookups, account verification, and outbound transfers.

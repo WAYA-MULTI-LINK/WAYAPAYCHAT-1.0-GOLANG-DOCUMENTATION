@@ -64,6 +64,17 @@ func TestVerifyAccount_AllowsWayaBankWithoutBankCode(t *testing.T) {
 	if out.AccountName != "JOHN DOE" {
 		t.Errorf("accountName = %q", out.AccountName)
 	}
+
+	outAlt, err := c.Payout.VerifyAccount(context.Background(), wayaquick.VerifyAccountRequest{
+		AccountNumber: "0123456789",
+		EnquiryType:   wayaquick.EnquiryTypeWayaBankAlt,
+	})
+	if err != nil {
+		t.Fatalf("unexpected error with alt enquiry type: %v", err)
+	}
+	if outAlt.AccountName != "JOHN DOE" {
+		t.Errorf("accountName = %q", outAlt.AccountName)
+	}
 }
 
 func TestVerifyAccount_DecodesResolvedAccount(t *testing.T) {
