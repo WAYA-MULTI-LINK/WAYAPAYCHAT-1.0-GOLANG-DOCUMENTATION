@@ -95,8 +95,21 @@ cs, err := client.Collect.Status(ctx, refNo)
 
 ## BVN identity check
 
+Verification takes two steps: submitting the BVN sends an OTP to the phone number registered against it, and the holder's record is returned once that OTP is verified.
+
 ```go
-rec, err := client.Identity.VerifyBVN(ctx, "22500809037") // exactly 11 digits — validated locally
+// Step 1: Initiate verification (sends OTP)
+started, err := client.Identity.InitiateBVN(ctx, "22222222222") // exactly 11 digits
+if err != nil {
+    log.Fatal(err)
+}
+fmt.Printf("OTP sent to %s, session: %s\n", started.PhoneNumber, started.Reference)
+
+// Step 2: Complete verification with OTP
+rec, err := client.Identity.CompleteBVN(ctx, started.Reference, "123456")
+if err != nil {
+    log.Fatal(err)
+}
 fmt.Printf("%s %s\n", rec.FirstName, rec.LastName)
 if rec.IsWatchListed() {
     // handle a flagged BVN
@@ -117,7 +130,8 @@ A payout returning `PROCESSING` is accepted, not settled. Poll `Payout.Status` w
 | `client.Payout` | `Status` | `GET /payment-payout/status/{reference}` |
 | `client.Collect` | `Initiate` | `POST /payment-collect/initiate` |
 | `client.Collect` | `Status` | `GET /payment-collect/status/{refNo}` |
-| `client.Identity` | `VerifyBVN` | `POST /identity-verification/bvn` |
+| `client.Identity` | `InitiateBVN` | `POST /identity-verification/bvn/initiate` |
+| `client.Identity` | `CompleteBVN` | `POST /identity-verification/bvn/complete` |
 | `client.Webhooks` | `ConstructEvent` / `VerifySignature` | — (verifies inbound webhooks) |
 
 ## Error handling

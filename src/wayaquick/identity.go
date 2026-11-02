@@ -52,11 +52,61 @@ func isElevenDigits(s string) bool {
 	return true
 }
 
-// VerifyBVN confirms a customer identity against their 11 digit Bank
-// Verification Number. The BVN is validated locally as exactly 11 digits
-// before the network call. Useful for KYC, onboarding, and fraud checks.
+// BVNInitiateResult is returned by Step 1 of BVN verification.
+// It carries the session reference and the masked phone number the OTP was sent to.
+type BVNInitiateResult struct {
+	Reference   string `json:"reference"`
+	PhoneNumber string `json:"phoneNumber"`
+	ExpiresAt   string `json:"expiresAt"`
+}
+
+// InitiateBVN starts a two-step BVN verification. It validates that bvn is exactly
+// 11 digits and requests an OTP to be sent to the phone number registered against the BVN.
 //
-// POST /identity-verification/bvn
+// POST /identity-verification/bvn/initiate
+func (s *IdentityService) InitiateBVN(ctx context.Context, bvn string) (*BVNInitiateResult, error) {
+	if !isElevenDigits(bvn) {
+		return nil, errors.New("wayaquick: bvn must be exactly 11 digits")
+	}
+
+	body := map[string]string{"bvn": bvn}
+	var out BVNInitiateResult
+	if err := s.client.do(ctx, http.MethodPost, "/identity-verification/bvn/initiate", nil, body, &out); err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+// CompleteBVN completes Step 2 of BVN verification by submitting the session reference
+// from InitiateBVN and the OTP received on the registered phone number.
+//
+// POST /identity-verification/bvn/complete
+func (s *IdentityService) CompleteBVN(ctx context.Context, reference, otp string) (*BVNRecord, error) {
+	reference = strings.TrimSpace(reference)
+	otp = strings.TrimSpace(otp)
+	if reference == "" {
+		return nil, errors.New("wayaquick: reference is required")
+	}
+	if otp == "" {
+		return nil, errors.New("wayaquick: otp is required")
+	}
+
+	body := map[string]string{
+		"reference": reference,
+		"otp":       otp,
+	}
+	var out BVNRecord
+	if err := s.client.do(ctx, http.MethodPost, "/identity-verification/bvn/complete", nil, body, &out); err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+// VerifyBVN confirms a customer identity against their 11 digit Bank
+// Verification Number.
+//
+// Deprecated: WayaQuick BVN verification requires a two-step OTP verification flow.
+// Use InitiateBVN followed by CompleteBVN instead.
 func (s *IdentityService) VerifyBVN(ctx context.Context, bvn string) (*BVNRecord, error) {
 	if !isElevenDigits(bvn) {
 		return nil, errors.New("wayaquick: bvn must be exactly 11 digits")
