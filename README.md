@@ -75,15 +75,18 @@ st, err := client.Payout.Status(ctx, payout.MerchantReference)
 ## Collect a payment
 
 ```go
-link, err := client.Collect.Initiate(ctx, wayaquick.CollectRequest{
-    PaymentLinkType: wayaquick.PaymentLinkTypeOneTime,
-    PaymentLinkName: "Order #1234",
-    Description:     "Order #1234 - 2 items",
-    PayableAmount:   1500,
-    Currency:        "NGN",
-    RedirectLink:    "https://merchant.example.com/callback",
+res, err := client.Collect.Initiate(ctx, wayaquick.CollectRequest{
+    TransactionID: "TXN-V2-20260604-01",
+    Amount:        "1500.00",
+    Currency:      "NGN",
+    FirstName:     "John",
+    LastName:      "Doe",
+    Email:         "john@example.com",
+    Phone:         "08012345678",
+    Description:   "Order #1234",
+    Meta:          map[string]any{"orderId": "1234"},
 })
-// Send the customer to link.ShortURL (or link.CustomerPaymentLink) to pay.
+// Redirect the customer to res.CheckOutURL to complete payment.
 // Confirm the result on your server before fulfilling the order.
 
 // Reconcile a deposit by its refNo (the gateway transactionId / webhook OrderId):

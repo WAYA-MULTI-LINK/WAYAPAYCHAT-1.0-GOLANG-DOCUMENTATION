@@ -7,87 +7,59 @@ import (
 	"net/url"
 )
 
-// Payment link types.
-const (
-	PaymentLinkTypeOneTime = "ONE_TIME_PAYMENT_LINK"
-)
-
-// CollectService covers payment link creation.
+// CollectService covers payment collections and checkout URLs.
 type CollectService struct{ client *Client }
 
-// CollectRequest creates a payment link your customer can pay through.
+// CollectRequest starts a payment collection and returns a checkout URL.
 type CollectRequest struct {
-	PaymentLinkType  string         `json:"paymentLinkType"`
-	PaymentLinkName  string         `json:"paymentLinkName"`
-	Description      string         `json:"description"`
-	PayableAmount    float64        `json:"payableAmount"` // major unit
-	Currency         string         `json:"currency"`
-	SuccessMessage   string         `json:"successMessage,omitempty"`
-	PhoneNumber      string         `json:"phoneNumber,omitempty"`
-	RedirectLink     string         `json:"redirectLink"`
-	CustomURL        string         `json:"customURL,omitempty"`
-	TotalCount       int            `json:"totalCount,omitempty"`
-	ChargeInterval   string         `json:"chargeInterval,omitempty"` // e.g. MONTHLY, for subscriptions
-	PlanID           string         `json:"planId,omitempty"`
-	ExpiryDate       string         `json:"expiryDate,omitempty"` // required when LinkCanExpire is true
-	LinkCanExpire    bool           `json:"linkCanExpire,omitempty"`
-	OtherDetailsJSON map[string]any `json:"otherDetailsJSON,omitempty"`
+	TransactionID string         `json:"transactionId"` // Unique reference / idempotency key
+	Amount        string         `json:"amount"`        // Quoted string, e.g. "1500.00"
+	Currency      string         `json:"currency"`      // e.g. "NGN"
+	FirstName     string         `json:"firstName"`     // Customer first name (2-100 characters)
+	LastName      string         `json:"lastName"`      // Customer last name (2-100 characters)
+	Email         string         `json:"email"`         // Customer email
+	Phone         string         `json:"phone"`         // Customer phone number
+	Description   string         `json:"description,omitempty"`
+	Meta          map[string]any `json:"meta,omitempty"`
 }
 
-// PaymentLink is the created link. Send the customer to CustomerPaymentLink or
-// the tidier ShortURL; keep PaymentLinkReference to reconcile later.
-// MerchantKeyMode tells you whether the link was created with a TEST or live
-// key, so you never confuse a sandbox link for a real one.
-type PaymentLink struct {
-	MerchantID                string  `json:"merchantId"`
-	PaymentLinkID             string  `json:"paymentLinkId"`
-	PaymentLinkType           string  `json:"paymentLinkType"`
-	PaymentLinkName           string  `json:"paymentLinkName"`
-	Description               string  `json:"description"`
-	PayableAmount             float64 `json:"payableAmount"`
-	Currency                  string  `json:"currency"`
-	AmountText                string  `json:"amountText"`
-	SuccessMessage            string  `json:"successMessage"`
-	RedirectLink              string  `json:"redirectLink"`
-	CustomerPaymentLink       string  `json:"customerPaymentLink"`
-	ShortURL                  string  `json:"shortUrl"`
-	Status                    string  `json:"status"`
-	Deleted                   bool    `json:"deleted"`
-	MerchantKeyMode           string  `json:"merchantKeyMode"`
-	PaymentLinkReference      string  `json:"paymentLinkReference"`
-	ExpiryDate                string  `json:"expiryDate"`
-	TotalCount                int     `json:"totalCount"`
-	LinkCanExpire             bool    `json:"linkCanExpire"`
-	IsSubscriptionPaymentLink bool    `json:"isSubscriptionPaymentLink"`
-	CreatedBy                 int64   `json:"createdBy"`
-	CreatedAt                 string  `json:"createdAt"`
+// CollectionResult is the response from POST /payment-collect/initiate.
+// Redirect the customer to CheckOutURL to complete payment.
+type CollectionResult struct {
+	UniqueID      string `json:"uniqueId"`
+	TransactionID string `json:"transactionId"`
+	Email         string `json:"email,omitempty"`
+	Amount        string `json:"amount,omitempty"`
+	CheckOutURL   string `json:"checkOutUrl"`
+	MerchantID    string `json:"merchantId,omitempty"`
+	ExpiresAt     string `json:"expiresAt,omitempty"`
 }
 
-// Initiate creates a payment link.
-//
-// This call fails unless you have whitelisted your server IPs and configured
-// payment preferences on the merchant dashboard.
+// PaymentLink is an alias for CollectionResult for backwards compatibility.
+type PaymentLink = CollectionResult
+
+// Initiate starts a payment collection and returns a checkout URL you redirect your customer to.
 //
 // POST /payment-collect/initiate
-func (s *CollectService) Initiate(ctx context.Context, req CollectRequest) (*PaymentLink, error) {
+func (s *CollectService) Initiate(ctx context.Context, req CollectRequest) (*CollectionResult, error) {
 	switch {
-	case req.PaymentLinkType == "":
-		return nil, errors.New("wayaquick: paymentLinkType is required")
-	case req.PaymentLinkName == "":
-		return nil, errors.New("wayaquick: paymentLinkName is required")
-	case req.Description == "":
-		return nil, errors.New("wayaquick: description is required")
-	case req.PayableAmount <= 0:
-		return nil, errors.New("wayaquick: payableAmount must be greater than zero")
+	case req.TransactionID == "":
+		return nil, errors.New("wayaquick: transactionId is required")
+	case req.Amount == "":
+		return nil, errors.New("wayaquick: amount is required")
 	case req.Currency == "":
-		return nil, errors.New("wayaquick: currency is required")
-	case req.RedirectLink == "":
-		return nil, errors.New("wayaquick: redirectLink is required")
-	case req.LinkCanExpire && req.ExpiryDate == "":
-		return nil, errors.New("wayaquick: expiryDate is required when linkCanExpire is true")
+		req.Currency = "NGN"
+	case req.FirstName == "":
+		return nil, errors.New("wayaquick: firstName is required")
+	case req.LastName == "":
+		return nil, errors.New("wayaquick: lastName is required")
+	case req.Email == "":
+		return nil, errors.New("wayaquick: email is required")
+	case req.Phone == "":
+		return nil, errors.New("wayaquick: phone is required")
 	}
 
-	var out PaymentLink
+	var out CollectionResult
 	if err := s.client.do(ctx, http.MethodPost, "/payment-collect/initiate", nil, req, &out); err != nil {
 		return nil, err
 	}

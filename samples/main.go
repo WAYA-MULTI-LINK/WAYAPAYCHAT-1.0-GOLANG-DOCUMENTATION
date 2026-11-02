@@ -49,15 +49,17 @@ func main() {
 	}
 	fmt.Printf("resolved account: %s\n", acct.AccountName)
 
-	// 3. Create a payment link to collect from a customer.
-	link, err := client.Collect.Initiate(ctx, wayaquick.CollectRequest{
-		PaymentLinkType: wayaquick.PaymentLinkTypeOneTime,
-		PaymentLinkName: "Order #1234",
-		Description:     "Order #1234 - 2 items",
-		PayableAmount:   1500,
-		Currency:        "NGN",
-		RedirectLink:    "https://merchant.example.com/callback",
-		OtherDetailsJSON: map[string]any{
+	// 3. Initiate a payment collection to collect from a customer.
+	coll, err := client.Collect.Initiate(ctx, wayaquick.CollectRequest{
+		TransactionID: wayaquick.GenerateReference("TXN"),
+		Amount:        "1500.00",
+		Currency:      "NGN",
+		FirstName:     "John",
+		LastName:      "Doe",
+		Email:         "john@example.com",
+		Phone:         "08012345678",
+		Description:   "Order #1234",
+		Meta: map[string]any{
 			"orderId": "1234",
 			"sku":     "SKU-001",
 		},
@@ -65,11 +67,11 @@ func main() {
 	if err != nil {
 		log.Fatalf("collect: %v", err)
 	}
-	fmt.Printf("pay here: %s\n", link.ShortURL)
+	fmt.Printf("checkout URL: %s (transactionId=%s)\n", coll.CheckOutURL, coll.TransactionID)
 
 	// 3b. Check the collection status — the pull/safety-net path alongside the
-	// deposit webhook. Reconcile by the link reference.
-	collStatus, err := client.Collect.Status(ctx, link.PaymentLinkReference)
+	// deposit webhook. Reconcile by the transaction ID.
+	collStatus, err := client.Collect.Status(ctx, coll.TransactionID)
 	if err != nil {
 		log.Fatalf("collect status: %v", err)
 	}

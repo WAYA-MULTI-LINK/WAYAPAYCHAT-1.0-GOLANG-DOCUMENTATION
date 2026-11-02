@@ -24,11 +24,13 @@ func validVerify() wayaquick.VerifyAccountRequest {
 
 func validCollect() wayaquick.CollectRequest {
 	return wayaquick.CollectRequest{
-		PaymentLinkType: wayaquick.PaymentLinkTypeOneTime,
-		PaymentLinkName: "Order #1234",
-		Description:     "Order #1234 - 2 items",
-		PayableAmount:   1500,
-		Currency:        "NGN",
-		RedirectLink:    "https://merchant.example.com/callback",
+		TransactionID: "TXN-V2-20260604-01",
+		Amount:        "1500.00",
+		Currency:      "NGN",
+		FirstName:     "John",
+		LastName:      "Doe",
+		Email:         "john@example.com",
+		Phone:         "08012345678",
+		Description:   "Order #1234",
 	}
 }
