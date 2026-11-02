@@ -59,9 +59,9 @@ payout, err := client.Payout.Initiate(ctx, wayaquick.PayoutRequest{
     Currency:      "NGN",
     AccountNumber: acct.AccountNumber,
     BankCode:      "058",
-    AccountName:   acct.AccountName,
+    AccountName:   acct.AccountName,                       // optional, match the verified name
     Reference:     wayaquick.GenerateReference("PAYOUT"),
-    Narration:     "April salary",
+    Narration:     "April salary",                         // optional statement narration
 })
 // payout.Status == wayaquick.StatusProcessing means accepted, not yet settled
 

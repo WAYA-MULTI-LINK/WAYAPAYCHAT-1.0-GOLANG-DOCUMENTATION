@@ -138,13 +138,13 @@ func TestPayout_Validates(t *testing.T) {
 			t.Errorf("missing reference: got %v", err)
 		}
 	}
-	// missing narration
+	// optional accountName and narration omitted
 	{
 		req := validPayout()
+		req.AccountName = ""
 		req.Narration = ""
-		if _, err := c.Payout.Initiate(context.Background(), req); err == nil ||
-			!strings.Contains(err.Error(), "narration is required") {
-			t.Errorf("missing narration: got %v", err)
+		if _, err := c.Payout.Initiate(context.Background(), req); err != nil {
+			t.Errorf("omitting optional accountName/narration failed: %v", err)
 		}
 	}
 }

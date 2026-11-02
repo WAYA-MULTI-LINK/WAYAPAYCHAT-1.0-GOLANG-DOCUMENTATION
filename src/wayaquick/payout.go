@@ -92,9 +92,9 @@ type PayoutRequest struct {
 	Currency      string  `json:"currency"`
 	AccountNumber string  `json:"accountNumber"`
 	BankCode      string  `json:"bankCode"`
-	AccountName   string  `json:"accountName"` // match the verified name
+	AccountName   string  `json:"accountName,omitempty"` // match the verified name (optional)
 	Reference     string  `json:"reference"`
-	Narration     string  `json:"narration"`
+	Narration     string  `json:"narration,omitempty"` // statement narration (optional)
 }
 
 // PayoutResult is the accepted payout acknowledgement. A PROCESSING status
@@ -125,12 +125,8 @@ func (s *PayoutService) Initiate(ctx context.Context, req PayoutRequest) (*Payou
 		return nil, errors.New("wayaquick: accountNumber is required")
 	case req.BankCode == "":
 		return nil, errors.New("wayaquick: bankCode is required")
-	case req.AccountName == "":
-		return nil, errors.New("wayaquick: accountName is required")
 	case req.Reference == "":
 		return nil, errors.New("wayaquick: reference is required")
-	case req.Narration == "":
-		return nil, errors.New("wayaquick: narration is required")
 	}
 
 	var out PayoutResult
