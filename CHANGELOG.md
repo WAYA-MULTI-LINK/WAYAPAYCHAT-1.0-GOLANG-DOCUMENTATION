@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org).
 
+## [1.0.2] - 2026-11-03
+
+### Added
+- Added two-step BVN verification: `Identity.InitiateBvn()` (`POST /identity-verification/bvn/initiate`) and `Identity.CompleteBvn()` (`POST /identity-verification/bvn/complete`) with OTP verification.
+- Updated `Collect.Create()` to use the hosted checkout request and response schema (`CheckOutURL`, `TransactionID`, `Amount`, `ExpiresAt`, etc.).
+- Added support for `"WAYA-BANK"` (`EnquiryTypeWayaBank`) and `"WAYABANK"` (`EnquiryTypeWayaBankAlt`) enquiry types in account verification.
+- Made `AccountName` and `Narration` optional in `PayoutRequest` per API specification.
+
+### Deprecated
+- `Identity.VerifyBvn()` is now deprecated in favor of `InitiateBvn()` and `CompleteBvn()`.
+
 ## [1.0.1] - 2026-07-17
 
 Renamed WayaPay → WayaQuick, matching the Java (`wayaquick-integration`) and .NET (`WayaQuick.Integration`) SDKs. No functional changes.
